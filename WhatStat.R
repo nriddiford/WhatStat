@@ -82,7 +82,6 @@ parseR <- function(file='data/DoolsWA.txt',drop="44"){
 
 senderDate <- function(){
   data<-parseR()
-  data$wordCount<-grepl("(\d+)H", data$wordCount)
 
   p <- ggplot(data)
   # p <- p+geom_bar(aes(date, (..count..), fill = factor(year(date))),stat='count')
@@ -95,18 +94,19 @@ senderDate <- function(){
 
 senderTime <- function () {
   data <- parseR()
-  data$hour<-hour(data$time)
+  data$hour<-lubridate::hour(data$time)
   
   
   p <- ggplot(data)
   # p <- p+geom_bar(aes(date, (..count..), fill = factor(year(date))),stat='count')
-  p <- p + geom_bar(aes(hour, (..count..), fill = sender),binwidth = 1, stat='count')
+  p <- p + geom_bar(aes(hour, (..count..), fill = sender),binwidth = 1, stat='count', alpha=0.9)
+  p <- p + scale_x_continuous("Time", breaks=seq(0,24, by=1))
   # p <- p +  scale_x_time(breaks="1 hour",labels = "%b %d")
   # 
   # 
   # p <- p + scale_x_time(breaks="1 hour", labels = date_format("%b - %H"))
   p <- p +cleanTheme() +
-    theme(axis.text.x = element_text(angle = 0))
+    theme(axis.text.x = element_text(angle = 0, hjust=0.5))
   p
 
 }
