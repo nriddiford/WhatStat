@@ -20,7 +20,6 @@ suppressMessages(library(VennDiagram))
 suppressMessages(library(lubridate))
 
 
-
 cleanTheme <- function(base_size = 12){
   theme(
     plot.title = element_text(hjust = 0.5, size = 20),
@@ -34,12 +33,14 @@ cleanTheme <- function(base_size = 12){
     # axis.title = element_text(size=30),
     panel.grid.major.y = element_line(color="grey80", size = 0.5, linetype = "dotted"),
     axis.text.x = element_text(angle = 90,vjust = 0.5, hjust=1),
-    axis.title.x=element_blank(),
-    axis.title.y=element_blank()
+    axis.title.x=element_text(size=30),
+    axis.title.y=element_text(size=30),
+    strip.text = element_text(size=20)
   )
 }
 
-parseR <- function(file='data/DoolsWA.txt',drop="44"){
+
+parseR <- function(file='data/doolies_raw_chat.txt',drop="44"){
   rawData <- read.delim(file, quote = "", 
                   row.names = NULL, 
                   stringsAsFactors = FALSE,
@@ -80,6 +81,7 @@ parseR <- function(file='data/DoolsWA.txt',drop="44"){
   return(cleanData)
 }
 
+
 senderDate <- function(){
   data<-parseR()
 
@@ -92,6 +94,7 @@ senderDate <- function(){
   p
 }
 
+
 senderTime <- function () {
   data <- parseR()
   data$hour<-lubridate::hour(data$time)
@@ -99,8 +102,13 @@ senderTime <- function () {
   
   p <- ggplot(data)
   # p <- p+geom_bar(aes(date, (..count..), fill = factor(year(date))),stat='count')
-  p <- p + geom_bar(aes(hour, (..count..), fill = sender),binwidth = 1, stat='count', alpha=0.9)
-  p <- p + scale_x_continuous("Time", breaks=seq(0,24, by=1))
+  # p <- p + geom_bar(aes(hour, (..count..), fill = sender),binwidth = 1, stat='count', alpha=0.9)
+  p <- p + geom_density(aes(hour, (..count..), fill = sender),binwidth = 1, stat='count', alpha=0.9)
+  
+  p <- p + scale_x_continuous("Time", breaks=seq(0,23, by=1))
+  p <- p + scale_y_continuous("Number of posts")
+  p <- p + facet_wrap(~sender)
+  
   # p <- p +  scale_x_time(breaks="1 hour",labels = "%b %d")
   # 
   # 
