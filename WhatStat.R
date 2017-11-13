@@ -80,9 +80,9 @@ parseR <- function(file='data/DoolsWA.txt',drop="44"){
   return(cleanData)
 }
 
-wordFreq <- function(){
+senderDate <- function(){
   data<-parseR()
-  data$wordCount<-str_count(data$message, '\\w+')
+  data$wordCount<-grepl("(\d+)H", data$wordCount)
 
   p <- ggplot(data)
   # p <- p+geom_bar(aes(date, (..count..), fill = factor(year(date))),stat='count')
@@ -92,6 +92,28 @@ wordFreq <- function(){
   p <- p +cleanTheme()
   p
 }
+
+senderTime <- function () {
+  data <- parseR()
+  data$hour<-hour(data$time)
+  
+  
+  p <- ggplot(data)
+  # p <- p+geom_bar(aes(date, (..count..), fill = factor(year(date))),stat='count')
+  p <- p + geom_bar(aes(hour, (..count..), fill = sender),binwidth = 1, stat='count')
+  # p <- p +  scale_x_time(breaks="1 hour",labels = "%b %d")
+  # 
+  # 
+  # p <- p + scale_x_time(breaks="1 hour", labels = date_format("%b - %H"))
+  p <- p +cleanTheme() +
+    theme(axis.text.x = element_text(angle = 0))
+  p
+
+}
+
+# qplot(date, value, data = temperatures, geom="line", ylab = "Temperature [C]") +
+#   scale_x_datetime(breaks = date_breaks("12 hour"), labels = date_format("%b %d - %H:%M"))
+
 
 
 # require(stringr)
