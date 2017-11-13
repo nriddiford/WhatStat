@@ -1,6 +1,6 @@
 list.of.packages <- c('ggplot2', 'RColorBrewer',
                       'tm', 'SnowballC',
-                      'reshape', 'wordcloud', 'stringr', 'plotly')
+                      'reshape', 'wordcloud', 'stringr', 'plotly', 'lubridate')
 new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
 if(length(new.packages)){
   cat('Installing missing packages...\n')
@@ -39,7 +39,7 @@ cleanTheme <- function(base_size = 12){
   )
 }
 
-parseR <- function(file='DoolsWA.txt',drop="44"){
+parseR <- function(file='data/DoolsWA.txt',drop="44"){
   rawData <- read.delim(file, quote = "", 
                   row.names = NULL, 
                   stringsAsFactors = FALSE,
@@ -70,7 +70,8 @@ parseR <- function(file='DoolsWA.txt',drop="44"){
     # unite(date_time, date, time, remove = TRUE)
   
   # data$date_time<-strsplit(data$date_time, '_')
-  data$datetime<-dmy_hms(data$datetime,tz=NULL)
+  # data$datetime<-dmy_hms(data$datetime,tz=NULL)
+  data$datetime<-dmy_hms(data$datetime)
   
   cleanData<-separate(data, datetime, c("date", "time"), sep = " ", remove =TRUE)
   cleanData$date<-ymd(cleanData$date)
