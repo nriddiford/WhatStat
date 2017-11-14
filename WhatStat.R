@@ -42,7 +42,7 @@ cleanTheme <- function(base_size = 12){
 }
 
 
-parseR <- function(file='data/doolies_raw_chat.txt',drop="44",user=NA){
+parseR <- function(file='data/waChat.txt',drop="44",user="Hood"){
   rawData <- read.delim(file, quote = "", 
                   row.names = NULL, 
                   stringsAsFactors = FALSE,
@@ -71,7 +71,6 @@ parseR <- function(file='data/doolies_raw_chat.txt',drop="44",user=NA){
   data <- sepData %>% 
     filter(!is.na(message)) %>%
     filter(!grepl(drop, sender)) %>%
-    # filter(sender == user) %>%
     droplevels() 
 
     # select(-datetime) %>%
@@ -79,7 +78,7 @@ parseR <- function(file='data/doolies_raw_chat.txt',drop="44",user=NA){
   
   # data$date_time<-strsplit(data$date_time, '_')
   # data$datetime<-dmy_hms(data$datetime,tz=NULL)
-  data$datetime<-dmy_hms(data$datetime)
+  data$datetime<-dmy_hms(data$datetime, tz=NULL)
   
   cleanData<-separate(data, datetime, c("date", "time"), sep = " ", remove =TRUE)
   cleanData$date<-ymd(cleanData$date)
