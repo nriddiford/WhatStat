@@ -20,22 +20,22 @@ shinyUI(fluidPage(
                  plotOutput('messageCount')
                )
              )
+    ),
+    
+    tabPanel("Post Count",
+             pageWithSidebar(
+               headerPanel('Number of posts per user'),
+               sidebarPanel(
+                 
+                 # "Empty inputs" - they will be updated after the data is uploaded
+                 selectInput('sender', 'Sender', "")
+               ),
+               mainPanel(
+                 plotOutput('postCount')
+               )
+             )
     )
     
-    # tabPanel("Post Count",
-    #          pageWithSidebar(
-    #            headerPanel('Post Count'),
-    #            sidebarPanel(
-    #              
-    #              # # "Empty inputs" - they will be updated after the data is uploaded
-    #              # selectInput('sender', 'Select user', "")
-    #              
-    #            ),
-    #            mainPanel(
-    #              plotOutput('messageCount')
-    #            )
-    #          )
-    # )
     
   
   )

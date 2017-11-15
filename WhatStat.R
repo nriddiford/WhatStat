@@ -42,31 +42,48 @@ cleanTheme <- function(base_size = 12){
 }
 
 
-parseR <- function(file='data/waChat.txt',drop="44"){
+parseR <- function(file='data/testChat.txt',drop="44"){
   rawData <- read.delim(file, quote = "", 
                   row.names = NULL, 
                   stringsAsFactors = FALSE,
                   header = F)
   
+  rawData<-scan(file, what="", sep="\n")
   
-  # remove blank lines
-  # rawData<-rawData[!apply(rawData == "", 1, all),]
   
-  empty_lines = grepl('^\\s*$', rawData)
-  rawData = rawData[! empty_lines]
+  joinedData <- rep(NA, length(rawData))
   
-  # join multi line messages into single line
-  # rawData$V1<-gsub("[\r\n]", " ", rawData$V2)
+  gr <- 1
+  for (i in 1:length(rawData)) {
+    # if starting with timestamp, save into out and move on (gr)
+    find.startline <- grepl("^\\d{2}\\/\\d{2}\\/\\d{4}", rawData[i])
+    if (find.startline) {
+      joinedData[gr] <- rawData[i]
+      gr <- gr + 1
+    }
+    
+    if (!find.startline) {
+      # if doesn't start with timestamp, append to previous (ss)
+      ss <- gr - 1
+      joinedData[ss] <- paste(joinedData[ss], rawData[i])
+    }
+  }
   
-  rawData$V1<-gsub("http", ' ', rawData$V1)
+  # if there are any multiline comments, some residual NAs should be present, removed
+  joinedData <- joinedData[!is.na(joinedData)]
+  
+  joinedData <- as.data.frame(joinedData,row.names = NULL, optional = FALSE )
+  colnames(joinedData)<-'V1'
+
+  
+  joinedData$V1<-gsub("http", ' ', joinedData$V1)
   # replace '/' with spaces
-  rawData$V1<-gsub("/", " ", rawData$V1)
+  joinedData$V1<-gsub("/", " ", joinedData$V1)
   
-  sepData<-suppressWarnings(separate(rawData, V1, c("datetime", "sender", "message"), sep = ": ", extra = "merge"))
+  # Replace emojis with '[emoji]'
+  joinedData$V1<-gsub("\\U00", "[emoji]", joinedData$V1)
   
-  # newColNames <- c("date", "time")
-  # newCols <- colsplit(sepData$datetime, ", ", newColNames)
-  # sepData <- cbind(sepData, newCols)
+  sepData<-suppressWarnings(separate(joinedData, V1, c("datetime", "sender", "message"), sep = ": ", extra = "merge"))
   
   sepData$message <- trimws(sepData$message)
   sepData$sender<-factor(sepData$sender)
@@ -76,11 +93,6 @@ parseR <- function(file='data/waChat.txt',drop="44"){
     filter(!grepl(drop, sender)) %>%
     droplevels() 
 
-    # select(-datetime) %>%
-    # unite(date_time, date, time, remove = TRUE)
-  
-  # data$date_time<-strsplit(data$date_time, '_')
-  # data$datetime<-dmy_hms(data$datetime,tz=NULL)
   data$datetime<-dmy_hms(data$datetime)
   
   cleanData<-separate(data, datetime, c("date", "time"), sep = " ", remove =TRUE)
