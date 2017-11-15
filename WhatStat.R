@@ -42,7 +42,7 @@ cleanTheme <- function(base_size = 12){
 }
 
 
-parseR <- function(file='data/waChat.txt',drop="44",user="Hood"){
+parseR <- function(file='data/waChat.txt',drop="44"){
   rawData <- read.delim(file, quote = "", 
                   row.names = NULL, 
                   stringsAsFactors = FALSE,
@@ -52,8 +52,11 @@ parseR <- function(file='data/waChat.txt',drop="44",user="Hood"){
   # remove blank lines
   # rawData<-rawData[!apply(rawData == "", 1, all),]
   
+  empty_lines = grepl('^\\s*$', rawData)
+  rawData = rawData[! empty_lines]
+  
   # join multi line messages into single line
-  # rawData$V1<-gsub("[\r\n]", "Hello", rawData$V2)
+  # rawData$V1<-gsub("[\r\n]", " ", rawData$V2)
   
   rawData$V1<-gsub("http", ' ', rawData$V1)
   # replace '/' with spaces
@@ -78,7 +81,7 @@ parseR <- function(file='data/waChat.txt',drop="44",user="Hood"){
   
   # data$date_time<-strsplit(data$date_time, '_')
   # data$datetime<-dmy_hms(data$datetime,tz=NULL)
-  data$datetime<-dmy_hms(data$datetime, tz=NULL)
+  data$datetime<-dmy_hms(data$datetime)
   
   cleanData<-separate(data, datetime, c("date", "time"), sep = " ", remove =TRUE)
   cleanData$date<-ymd(cleanData$date)

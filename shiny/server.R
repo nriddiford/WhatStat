@@ -68,7 +68,7 @@ parseR <- function(file='data/waChat.txt',drop="44",user="Hood"){
   
   # data$date_time<-strsplit(data$date_time, '_')
   # data$datetime<-dmy_hms(data$datetime,tz=NULL)
-  data$datetime<-dmy_hms(data$datetime, tz=NULL)
+  data$datetime<-dmy_hms(data$datetime)
   
   cleanData<-separate(data, datetime, c("date", "time"), sep = " ", remove =TRUE)
   cleanData$date<-ymd(cleanData$date)
@@ -97,6 +97,7 @@ senderPosts <- function(){
 }
 
 shinyServer(function(input, output) {
+  
   output$contents <- renderTable({
     
     inFile <- input$file1
