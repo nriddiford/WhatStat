@@ -24,8 +24,8 @@ cleanTheme <- function(base_size = 12){
     axis.line.y = element_line(color="black", size = 0.5),
     axis.text = element_text(size=15),
     # axis.title = element_text(size=30),
-    panel.grid.major.y = element_line(color="grey80", size = 0.5, linetype = "dotted"),
-    axis.text.x = element_text(angle = 90,vjust = 0.5, hjust=1),
+    panel.grid.major.x = element_line(color="grey80", size = 0.5, linetype = "dotted"),
+    # axis.text.x = element_text(angle = 90,vjust = 0.5, hjust=1),
     axis.title.x=element_text(size=15),
     axis.title.y=element_text(size=15),
     strip.text = element_text(size=15)
@@ -100,27 +100,33 @@ senderPosts <- function(file_in='data/testChat.txt'){
   rownames(postCount)<-NULL
   colnames(postCount)<-c("name", "posts")
   
-  postCount <- transform(postCount, name = reorder(name, -posts))
+  postCount <- transform(postCount, name = reorder(name, posts))
   
   if(max(postCount$posts) <= 100){
     division = 10
   }
-  else if(max(postCount$posts) > 100 & max(postCount$posts) < 1000){
+  else if(max(postCount$posts) > 100 & max(postCount$posts) < 500){
+    division = 50
+  }
+  else if(max(postCount$posts) > 500 & max(postCount$posts) < 1000){
     division = 100
   }
   else{
-    division = 1000
+    division = 200
   }
   
   # Plot bar
   p <- ggplot(postCount)
   p <- p + geom_bar(aes(name, posts, fill = "deepskyblue1"),stat='identity')
-  p <- p + scale_y_continuous("Number of posts", breaks=seq(0,max(postCount$posts),by=division))
-  p <- p + cleanTheme() + 
+  p <- p + scale_y_continuous("Number of posts", breaks=seq(0,max(postCount$posts),by=division),expand = c(0.01,0.05))
+  p <- p + cleanTheme() +
     theme(
-      axis.title.x=element_blank()
-      )
+      axis.title.x=element_blank(),
+      axis.title.y=element_blank(),
+      axis.text = element_text(size=20)
+    )
   p <- p + scale_fill_identity()
+  p <- p + coord_flip()
   
   p
   
@@ -151,19 +157,75 @@ wordFreq <- function(file_in='data/testChat.txt'){
     droplevels()
   
   d <- all[1:20,]
-  d  <- transform(d , word = reorder(word, -freq))
+  d  <- transform(d , word = reorder(word, freq))
+  
+  
+  if(max(d$freq) <= 10){
+    division = 2
+  }
+  else if(max(d$freq) > 10 & max(d$freq) < 50){
+    division = 5
+  }
+  else if(max(d$freq) > 50 & max(d$freq) < 100){
+    division = 10
+  }
+  else{
+    division = 20
+  }
+  
   
   p <- ggplot(d)
-  p <- p + geom_bar(aes(word, freq),stat='identity')
-  p <- p + scale_y_continuous("Word frequency", breaks=seq(0,max(d$freq),by=50))
-  p <- p + scale_x_discrete("Word")
+  p <- p + geom_bar(aes(word, freq, fill="tomato3"),stat='identity')
+  p <- p + scale_y_continuous("Word frequency", breaks=seq(0,max(d$freq),by=division),expand=c(0.01,0))
+  p <- p + scale_x_discrete("Word", expand = c(0.01,0.01))
   
   p <- p + cleanTheme() +
-    theme(axis.text.x = element_text(angle = 45, hjust=1))
+    theme(
+      axis.title.x=element_blank(),
+      axis.title.y=element_blank(),
+      axis.text = element_text(size=20)
+    )
+    # theme(axis.text.y = element_text(angle = 90, hjust=1, vjust=0.5),
+    #       axis.text = element_text(size=20),
+    #       axis.title.x=element_blank()
+    #       )
+  p <- p + scale_fill_identity()
+  p <- p + coord_flip()
   p
 }
 
-shinyServer(function(input, output,session) {
+
+chatCloud <- function(file_in='data/testChat.txt'){
+  data <- parseR(file=file_in)
+  
+  docs <- Corpus(VectorSource(data$message)) %>%
+    tm_map(removePunctuation) %>%
+    tm_map(removeNumbers) %>%
+    tm_map(content_transformer(tolower))  %>%
+    tm_map(removeWords, stopwords("english")) %>%
+    tm_map(removeWords, c("omitted", "image", 'https', 'video')) %>%
+    tm_map(stripWhitespace)
+  
+  # dataframe of terms
+  dtm <- TermDocumentMatrix(docs)
+  m <- as.matrix(dtm)
+  v <- sort(rowSums(m),decreasing=TRUE)
+  all <- data.frame(word = names(v),freq=v)
+  
+  all <- all %>%
+    filter(nchar(as.character(word))>3) %>%
+    filter(!grepl('http', word)) %>%
+    droplevels()
+  
+  wordcloud(words = all$word, freq = all$freq, min.freq = 1,
+            max.words=100, random.order=FALSE, rot.per=0.35, 
+            colors=brewer.pal(8, "Dark2"),scale=c(4,.3))
+  
+}
+
+
+
+shinyServer(function(input, output, session) {
   
   
   data <- reactive({ 
@@ -187,7 +249,6 @@ shinyServer(function(input, output,session) {
     
     return(df)
   })
-  
 
   output$contents <- renderTable({
     head(data())
@@ -195,40 +256,19 @@ shinyServer(function(input, output,session) {
     
   output$postCount <-renderPlot({
     senderPosts(file=input$file1$datapath)
-  #   data<-data()
-  #   
-  #   postCount<-as.data.frame(cbind(table(data$sender)))
-  #   postCount <- data.frame(names = row.names(postCount), postCount)
-  #   rownames(postCount)<-NULL
-  #   colnames(postCount)<-c("name", "posts")
-  #   
-  #   postCount <- transform(postCount, name = reorder(name, -posts))
-  #   
-  #   if(max(postCount$posts) <= 100){
-  #     division = 10
-  #   }
-  #   else if(max(postCount$posts) > 100 & max(postCount$posts) < 1000){
-  #     division = 100
-  #   }
-  #   else{
-  #     division = 1000
-  #   }
-  #   
-  #   # Plot bar
-  #   p <- ggplot(postCount)
-  #   p <- p + geom_bar(aes(name, posts),stat='identity')
-  #   p <- p + scale_y_continuous("Number of posts", breaks=seq(0,max(postCount$posts),by=division))
-  #   p <- p + cleanTheme() + 
-  #     theme(
-  #       axis.title.x=element_blank()
-  #     )
-  #   p
-  #   
+
   })
   
   output$wordCount <-renderPlot({
     wordFreq(file=input$file1$datapath)
   
     })
+  
+  output$chatCloud <-renderPlot({
+    chatCloud(file=input$file1$datapath)
+    
+  })
+  
+  
     
 })

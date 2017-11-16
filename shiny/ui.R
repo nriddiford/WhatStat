@@ -8,7 +8,7 @@ shinyUI(fluidPage(
              titlePanel("Uploading Files"),
              sidebarLayout(
                sidebarPanel(
-                 fileInput('file1', 'Choose CSV File',
+                 fileInput('file1', 'Select your WhatsApp chat log',
                            accept='.txt'
                            ),
                  
@@ -34,11 +34,7 @@ shinyUI(fluidPage(
                  plotOutput('postCount')
                )
              )
-    )
-    
-    
-    
-    ,
+    ),
     
     tabPanel("Word Frequency",
              pageWithSidebar(
@@ -50,6 +46,20 @@ shinyUI(fluidPage(
                ),
                mainPanel(
                  plotOutput('wordCount')
+               )
+             )
+    ),
+    
+    tabPanel("Chat Cloud",
+             pageWithSidebar(
+               headerPanel('Most used words'),
+               sidebarPanel(
+                 
+                 # "Empty inputs" - they will be updated after the data is uploaded
+                 selectInput('sender', 'Sender', "")
+               ),
+               mainPanel(
+                 plotOutput('chatCloud')
                )
              )
     )
