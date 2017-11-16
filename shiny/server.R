@@ -71,7 +71,7 @@ parseR <- function(file='data/testChat.txt',drop="44"){
   joinedData$V1<-gsub("/", " ", joinedData$V1)
   
   # Replace emojis with '[emoji]'
-  joinedData$V1<-gsub("\\U00", "[emoji]", joinedData$V1)
+  # joinedData$V1<-gsub("\\U00", "[emoji]", joinedData$V1)
   
   sepData<-suppressWarnings(separate(joinedData, V1, c("datetime", "sender", "message"), sep = ": ", extra = "merge"))
   
@@ -92,8 +92,8 @@ parseR <- function(file='data/testChat.txt',drop="44"){
   return(cleanData)
 }
 
-senderPosts <- function(){
-  data <- parseR(file='data/testChat.txt')
+senderPosts <- function(file_in='data/testChat.txt'){
+  data <- parseR(file=file_in)
   
   postCount<-as.data.frame(cbind(table(data$sender)))
   postCount <- data.frame(names = row.names(postCount), postCount)
@@ -102,16 +102,65 @@ senderPosts <- function(){
   
   postCount <- transform(postCount, name = reorder(name, -posts))
   
+  if(max(postCount$posts) <= 100){
+    division = 10
+  }
+  else if(max(postCount$posts) > 100 & max(postCount$posts) < 1000){
+    division = 100
+  }
+  else{
+    division = 1000
+  }
+  
   # Plot bar
   p <- ggplot(postCount)
-  p <- p + geom_bar(aes(name, posts),stat='identity')
-  p <- p + scale_y_continuous("Number of posts", breaks=seq(0,max(postCount$posts),by=100))
+  p <- p + geom_bar(aes(name, posts, fill = "deepskyblue1"),stat='identity')
+  p <- p + scale_y_continuous("Number of posts", breaks=seq(0,max(postCount$posts),by=division))
   p <- p + cleanTheme() + 
     theme(
       axis.title.x=element_blank()
       )
+  p <- p + scale_fill_identity()
+  
   p
   
+}
+
+
+wordFreq <- function(file_in='data/testChat.txt'){
+  data <- parseR(file=file_in)
+  
+  docs <- Corpus(VectorSource(data$message)) %>%
+    tm_map(removePunctuation) %>%
+    tm_map(removeNumbers) %>%
+    tm_map(content_transformer(tolower))  %>%
+    tm_map(removeWords, stopwords("english")) %>%
+    tm_map(removeWords, c("omitted", "image", 'https', 'video')) %>%
+    tm_map(stripWhitespace)
+  
+  # dataframe of terms
+  dtm <- TermDocumentMatrix(docs)
+  m <- as.matrix(dtm)
+  v <- sort(rowSums(m),decreasing=TRUE)
+  all <- data.frame(word = names(v),freq=v)
+  
+  all <- all %>% 
+    # NOT working! 
+    filter(nchar(as.character(word))>3) %>%
+    filter(!grepl('http', word)) %>%
+    droplevels()
+  
+  d <- all[1:20,]
+  d  <- transform(d , word = reorder(word, -freq))
+  
+  p <- ggplot(d)
+  p <- p + geom_bar(aes(word, freq),stat='identity')
+  p <- p + scale_y_continuous("Word frequency", breaks=seq(0,max(d$freq),by=50))
+  p <- p + scale_x_discrete("Word")
+  
+  p <- p + cleanTheme() +
+    theme(axis.text.x = element_text(angle = 45, hjust=1))
+  p
 }
 
 shinyServer(function(input, output,session) {
@@ -145,36 +194,41 @@ shinyServer(function(input, output,session) {
   })
     
   output$postCount <-renderPlot({
-    
-    data<-data()
-    
-    postCount<-as.data.frame(cbind(table(data$sender)))
-    postCount <- data.frame(names = row.names(postCount), postCount)
-    rownames(postCount)<-NULL
-    colnames(postCount)<-c("name", "posts")
-    
-    postCount <- transform(postCount, name = reorder(name, -posts))
-    
-    if(max(postCount$posts) <= 100){
-      division = 10
-    }
-    else if(max(postCount$posts) > 100 & max(postCount$posts) < 1000){
-      division = 100
-    }
-    else{
-      division = 1000
-    }
-    
-    # Plot bar
-    p <- ggplot(postCount)
-    p <- p + geom_bar(aes(name, posts),stat='identity')
-    p <- p + scale_y_continuous("Number of posts", breaks=seq(0,max(postCount$posts),by=division))
-    p <- p + cleanTheme() + 
-      theme(
-        axis.title.x=element_blank()
-      )
-    p
-    
+    senderPosts(file=input$file1$datapath)
+  #   data<-data()
+  #   
+  #   postCount<-as.data.frame(cbind(table(data$sender)))
+  #   postCount <- data.frame(names = row.names(postCount), postCount)
+  #   rownames(postCount)<-NULL
+  #   colnames(postCount)<-c("name", "posts")
+  #   
+  #   postCount <- transform(postCount, name = reorder(name, -posts))
+  #   
+  #   if(max(postCount$posts) <= 100){
+  #     division = 10
+  #   }
+  #   else if(max(postCount$posts) > 100 & max(postCount$posts) < 1000){
+  #     division = 100
+  #   }
+  #   else{
+  #     division = 1000
+  #   }
+  #   
+  #   # Plot bar
+  #   p <- ggplot(postCount)
+  #   p <- p + geom_bar(aes(name, posts),stat='identity')
+  #   p <- p + scale_y_continuous("Number of posts", breaks=seq(0,max(postCount$posts),by=division))
+  #   p <- p + cleanTheme() + 
+  #     theme(
+  #       axis.title.x=element_blank()
+  #     )
+  #   p
+  #   
   })
+  
+  output$wordCount <-renderPlot({
+    wordFreq(file=input$file1$datapath)
+  
+    })
     
 })

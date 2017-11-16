@@ -37,6 +37,24 @@ shinyUI(fluidPage(
     )
     
     
+    
+    ,
+    
+    tabPanel("Word Frequency",
+             pageWithSidebar(
+               headerPanel('Most commonly used words'),
+               sidebarPanel(
+                 
+                 # "Empty inputs" - they will be updated after the data is uploaded
+                 selectInput('sender', 'Sender', "")
+               ),
+               mainPanel(
+                 plotOutput('wordCount')
+               )
+             )
+    )
+    
+    
   
   )
 )
