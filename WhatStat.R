@@ -36,6 +36,8 @@ suppressMessages(library(VennDiagram))
 suppressMessages(library(lubridate))
 suppressMessages(library("wordcloud"))
 
+suppressMessages(library("tools"))
+
 
 cleanTheme <- function(base_size = 12){
   theme(
@@ -57,14 +59,9 @@ cleanTheme <- function(base_size = 12){
 }
 
 
-parseR <- function(file='data/testChat.txt',drop="44"){
-  rawData <- read.delim(file, quote = "", 
-                  row.names = NULL, 
-                  stringsAsFactors = FALSE,
-                  header = F)
-  
+parseR <- function(file='data/waChat.txt',drop="44", user=NA){
+ 
   rawData<-scan(file, what="", sep="\n")
-  
   
   joinedData <- rep(NA, length(rawData))
   
@@ -103,6 +100,11 @@ parseR <- function(file='data/testChat.txt',drop="44"){
   sepData$message <- trimws(sepData$message)
   sepData$sender<-factor(sepData$sender)
   
+  if(!is.na(user)){
+    if(user %in% levels(sepData$sender))
+    sepData <- filter(sepData, grepl(user, sepData$sender))
+  }
+  
   data <- sepData %>% 
     filter(!is.na(message)) %>%
     filter(!grepl(drop, sender)) %>%
@@ -140,7 +142,7 @@ senderDate <- function(){
     p <- p + scale_x_date("Date", date_breaks="months", date_labels="%b")
     p <- p +cleanTheme()
     p <- p + facet_wrap(~sender,ncol = 2)
-    
+    n
   }
   p
 }
@@ -182,24 +184,65 @@ senderTime <- function () {
 
 }
 
-senderPosts <- function(){
-  data <- parseR()
+
+senderPosts <- function(file_in='data/waChat.txt', user=NA){
+  data <- parseR(file=file_in,user=user)
   
   postCount<-as.data.frame(cbind(table(data$sender)))
   postCount <- data.frame(names = row.names(postCount), postCount)
   rownames(postCount)<-NULL
   colnames(postCount)<-c("name", "posts")
-
-  postCount <- transform(postCount, name = reorder(name, -posts))
+  
+  postCount <- transform(postCount, name = reorder(name, posts))
+  
+  if(max(postCount$posts) <= 100){
+    division = 10
+  }
+  else if(max(postCount$posts) > 100 & max(postCount$posts) < 500){
+    division = 50
+  }
+  else if(max(postCount$posts) > 500 & max(postCount$posts) < 1000){
+    division = 100
+  }
+  else{
+    division = 200
+  }
   
   # Plot bar
   p <- ggplot(postCount)
-  p <- p + geom_bar(aes(name, posts),stat='identity')
-  p <- p + scale_y_continuous("Number of posts", breaks=seq(0,max(postCount$posts),by=100))
-  p <- p + cleanTheme()
+  p <- p + geom_bar(aes(name, posts, fill = "deepskyblue1"),stat='identity')
+  p <- p + scale_y_continuous("Number of posts", breaks=seq(0,max(postCount$posts),by=division),expand = c(0.01,0.05))
+  p <- p + cleanTheme() +
+    theme(
+      axis.title.x=element_blank(),
+      axis.title.y=element_blank(),
+      axis.text = element_text(size=20)
+    )
+  p <- p + scale_fill_identity()
+  p <- p + coord_flip()
+  
   p
   
 }
+ 
+# senderPosts <- function(){
+#   data <- parseR()
+#   
+#   postCount<-as.data.frame(cbind(table(data$sender)))
+#   postCount <- data.frame(names = row.names(postCount), postCount)
+#   rownames(postCount)<-NULL
+#   colnames(postCount)<-c("name", "posts")
+# 
+#   postCount <- transform(postCount, name = reorder(name, -posts))
+#   
+#   # Plot bar
+#   p <- ggplot(postCount)
+#   p <- p + geom_bar(aes(name, posts),stat='identity')
+#   p <- p + scale_y_continuous("Number of posts", breaks=seq(0,max(postCount$posts),by=100))
+#   p <- p + cleanTheme()
+#   p
+#   
+# }
 
 chatCloud <- function(){
   data <- parseR()
@@ -236,8 +279,8 @@ chatCloud <- function(){
   dev.off()
 }
 
-wordFreq <- function(){
-  data <- parseR()
+wordFreq <- function(length=3){
+  data <- parseR(file = 'data/DoolsWA.txt')
   
   docs <- Corpus(VectorSource(data$message)) %>%
     tm_map(removePunctuation) %>%
@@ -254,7 +297,7 @@ wordFreq <- function(){
   all <- data.frame(word = names(v),freq=v)
   
   all <- all %>%
-    filter(nchar(as.character(word))>3) %>%
+    filter(nchar(as.character(word))>length) %>%
     filter(!grepl('http', word)) %>%
     droplevels()
   

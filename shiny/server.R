@@ -1,3 +1,19 @@
+# Copyright 2017 Nick Riddiford
+# 
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+# 
+# http://www.apache.org/licenses/LICENSE-2.0
+# 
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+
+
 library(shiny)
 suppressMessages(library(ggplot2))
 suppressMessages(library(dplyr))
@@ -32,12 +48,8 @@ cleanTheme <- function(base_size = 12){
   )
 }
 
-parseR <- function(file='data/testChat.txt',drop="44"){
-  rawData <- read.delim(file, quote = "", 
-                        row.names = NULL, 
-                        stringsAsFactors = FALSE,
-                        header = F)
-  
+parseR <- function(file='data/testChat.txt',drop="44", user=NA){
+
   rawData<-scan(file, what="", sep="\n")
   
   
@@ -78,11 +90,19 @@ parseR <- function(file='data/testChat.txt',drop="44"){
   sepData$message <- trimws(sepData$message)
   sepData$sender<-factor(sepData$sender)
   
+  if(!is.na(user)){
+    if(user %in% levels(sepData$sender)) {
+      sepData <- filter(sepData, grepl(user, sepData$sender))
+    }
+  }
+  
   data <- sepData %>% 
     filter(!is.na(message)) %>%
     filter(!grepl(drop, sender)) %>%
     droplevels() 
   
+  user <- ifelse(data$user, user, 'NA')
+    
   data$datetime<-dmy_hms(data$datetime)
   
   cleanData<-separate(data, datetime, c("date", "time"), sep = " ", remove =TRUE)
@@ -133,7 +153,7 @@ senderPosts <- function(file_in='data/testChat.txt'){
 }
 
 
-wordFreq <- function(file_in='data/testChat.txt'){
+wordFreq <- function(file_in='data/testChat.txt', wordlength=3){
   data <- parseR(file=file_in)
   
   docs <- Corpus(VectorSource(data$message)) %>%
@@ -152,7 +172,7 @@ wordFreq <- function(file_in='data/testChat.txt'){
   
   all <- all %>% 
     # NOT working! 
-    filter(nchar(as.character(word))>3) %>%
+    filter(nchar(as.character(word))>wordlength) %>%
     filter(!grepl('http', word)) %>%
     droplevels()
   
@@ -195,8 +215,8 @@ wordFreq <- function(file_in='data/testChat.txt'){
 }
 
 
-chatCloud <- function(file_in='data/testChat.txt'){
-  data <- parseR(file=file_in)
+chatCloud <- function(file_in='data/testChat.txt',user=NA){
+  data <- parseR(file=file_in,user=user)
   
   docs <- Corpus(VectorSource(data$message)) %>%
     tm_map(removePunctuation) %>%
@@ -227,48 +247,54 @@ chatCloud <- function(file_in='data/testChat.txt'){
 
 shinyServer(function(input, output, session) {
   
-  
   data <- reactive({ 
-    req(input$file1) ## ?req #  require that the input is available
+    req(input$file1)
     
     inFile <- input$file1 
     
-    df <- parseR(file=inFile$datapath)
-
-    
-    
-    # Update inputs (you could create an observer with both updateSel...)
-    # You can also constraint your choices. If you wanted select only numeric
-    # variables you could set "choices = sapply(df, is.numeric)"
-    # It depends on what do you want to do later on.
-    
-    updateSelectInput(session, inputId = 'sender', label = 'Sender',
-                      choices = levels(df$sender), selected = levels(df$sender))
-    # updateSelectInput(session, inputId = 'ycol', label = 'Y Variable',
-    #                   choices = names(df), selected = names(df)[2])
+    df <- parseR(file=inFile$datapath) # Call my parser function 
     
     return(df)
   })
-
+  
+  observe({
+    df = data()
+    updateSelectInput(session, inputId = 'sender', label = 'Sender',
+                      choices = levels(df$sender), selected = 'NA')
+  })
+  # Main page
   output$contents <- renderTable({
-    head(data())
+    head(data(), 25)
   })
-    
+  
+  # tabPanel 1
   output$postCount <-renderPlot({
-    senderPosts(file=input$file1$datapath)
-
-  })
-  
-  output$wordCount <-renderPlot({
-    wordFreq(file=input$file1$datapath)
-  
-    })
-  
-  output$chatCloud <-renderPlot({
-    chatCloud(file=input$file1$datapath)
+    senderPosts(file_in=input$file1$datapath)
     
   })
   
+  observe({
+    df = data()
+    updateSelectInput(session, inputId = 'wlength', label = 'Word length',
+                      choices = c(3:5), selected = 3)
+  })
   
+  # tabPanel 2
+  output$wordCount <-renderPlot({
+    wordFreq(file_in=input$file1$datapath, wordlength=input$wlength)
+    
+  })
+  
+  observe({
+    df = data()
+    updateSelectInput(session, inputId = 'user', label = 'Sender',
+                      choices = levels(df$sender), selected = 'NA')
+  })
+  
+  # tabPanel 3
+  output$wCloud <-renderPlot({
+    chatCloud(file_in=input$file1$datapath,user=input$user)
+    
+  })
     
 })

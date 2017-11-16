@@ -16,10 +16,11 @@ library(shiny)
 
 suppressMessages(library("wordcloud"))
 shinyUI(fluidPage(
-  titlePanel("Column Plot"),
+  titlePanel("WhatStat"),
   tabsetPanel(
+    # Tab 1
     tabPanel("Upload File",
-             titlePanel("Uploading Files"),
+             titlePanel("Upload your WhatsApp chat log"),
              sidebarLayout(
                sidebarPanel(
                  fileInput('file1', 'Select your WhatsApp chat log',
@@ -36,6 +37,7 @@ shinyUI(fluidPage(
              )
     ),
     
+    # Tab 2
     tabPanel("Post Count",
              pageWithSidebar(
                headerPanel('Number of posts per user'),
@@ -50,13 +52,16 @@ shinyUI(fluidPage(
              )
     ),
     
+    # Tab 3
     tabPanel("Word Frequency",
              pageWithSidebar(
                headerPanel('Most commonly used words'),
                sidebarPanel(
                  
+                 sliderInput("wlength", "Minimum word length",
+                             min = 2, max = 10, "")
                  # "Empty inputs" - they will be updated after the data is uploaded
-                 selectInput('sender', 'Sender', "")
+                 # selectInput('wlength', 'Word length', "")
                ),
                mainPanel(
                  plotOutput('wordCount')
@@ -64,22 +69,19 @@ shinyUI(fluidPage(
              )
     ),
     
+    # Tab 4
     tabPanel("Chat Cloud",
              pageWithSidebar(
-               headerPanel('Most used words'),
+               headerPanel('Word cloud of most used words'),
                sidebarPanel(
-                 
-                 # "Empty inputs" - they will be updated after the data is uploaded
-                 selectInput('sender', 'Sender', "")
+                 selectInput('user', 'Sender', "")
                ),
                mainPanel(
-                 plotOutput('chatCloud')
+                 plotOutput('wCloud')
                )
              )
     )
     
-    
-  
   )
 )
 )
