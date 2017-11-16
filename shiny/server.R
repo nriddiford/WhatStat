@@ -77,8 +77,6 @@ parseR <- function(file='data/testChat.txt',drop="44", user=NA){
   joinedData <- as.data.frame(joinedData,row.names = NULL, optional = FALSE )
   colnames(joinedData)<-'V1'
   
-  
-  joinedData$V1<-gsub("http", ' ', joinedData$V1)
   # replace '/' with spaces
   joinedData$V1<-gsub("/", " ", joinedData$V1)
   
@@ -156,7 +154,10 @@ senderPosts <- function(file_in='data/testChat.txt'){
 wordFreq <- function(file_in='data/testChat.txt', wordlength=3){
   data <- parseR(file=file_in)
   
+  removeURL <- content_transformer(function(x) gsub("(f|ht)tp(s?)://\\S+", "", x, perl=T))
+  
   docs <- Corpus(VectorSource(data$message)) %>%
+    tm_map(removeURL) %>%
     tm_map(removePunctuation) %>%
     tm_map(removeNumbers) %>%
     tm_map(content_transformer(tolower))  %>%
@@ -172,7 +173,7 @@ wordFreq <- function(file_in='data/testChat.txt', wordlength=3){
   
   all <- all %>% 
     # NOT working! 
-    filter(nchar(as.character(word))>wordlength) %>%
+    filter(nchar(as.character(word))>=wordlength) %>%
     filter(!grepl('http', word)) %>%
     droplevels()
   
@@ -215,15 +216,18 @@ wordFreq <- function(file_in='data/testChat.txt', wordlength=3){
 }
 
 
-chatCloud <- function(file_in='data/testChat.txt',user=NA){
+chatCloud <- function(file_in='data/testChat.txt',user=NA,wordlength=3){
   data <- parseR(file=file_in,user=user)
   
+  removeURL <- content_transformer(function(x) gsub("(f|ht)tp(s?)://\\S+", "", x, perl=T))
+  
   docs <- Corpus(VectorSource(data$message)) %>%
+    tm_map(removeURL) %>%
     tm_map(removePunctuation) %>%
     tm_map(removeNumbers) %>%
     tm_map(content_transformer(tolower))  %>%
     tm_map(removeWords, stopwords("english")) %>%
-    tm_map(removeWords, c("omitted", "image", 'https', 'video')) %>%
+    tm_map(removeWords, c("omitted", "image", 'http', 'video')) %>%
     tm_map(stripWhitespace)
   
   # dataframe of terms
@@ -233,12 +237,12 @@ chatCloud <- function(file_in='data/testChat.txt',user=NA){
   all <- data.frame(word = names(v),freq=v)
   
   all <- all %>%
-    filter(nchar(as.character(word))>3) %>%
+    filter(nchar(as.character(word))>=wordlength) %>%
     filter(!grepl('http', word)) %>%
     droplevels()
   
   wordcloud(words = all$word, freq = all$freq, min.freq = 1,
-            max.words=100, random.order=FALSE, rot.per=0.35, 
+            max.words=80, random.order=FALSE, rot.per=0.35, 
             colors=brewer.pal(8, "Dark2"),scale=c(4,.3))
   
 }
@@ -289,11 +293,13 @@ shinyServer(function(input, output, session) {
     df = data()
     updateSelectInput(session, inputId = 'user', label = 'Sender',
                       choices = levels(df$sender), selected = 'NA')
+    updateSelectInput(session, inputId = 'cwlength', label = 'Word length',
+                      choices = c(3:5), selected = 3)
   })
   
   # tabPanel 3
   output$wCloud <-renderPlot({
-    chatCloud(file_in=input$file1$datapath,user=input$user)
+    chatCloud(file_in=input$file1$datapath,user=input$user, wordlength=input$cwlength)
     
   })
     

@@ -74,7 +74,9 @@ shinyUI(fluidPage(
              pageWithSidebar(
                headerPanel('Word cloud of most used words'),
                sidebarPanel(
-                 selectInput('user', 'Sender', "")
+                 selectInput('user', 'Sender', ""),
+                 sliderInput("cwlength", "Minimum word length",
+                             min = 2, max = 10, "")
                ),
                mainPanel(
                  plotOutput('wCloud')

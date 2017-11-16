@@ -5,8 +5,8 @@ account: whatstat
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 235731
-bundleId: 1078500
+bundleId: 1079684
 url: https://whatstat.shinyapps.io/shiny/
-when: 1510825411.87124
+when: 1510864571.7704
 asMultiple: FALSE
 asStatic: FALSE
