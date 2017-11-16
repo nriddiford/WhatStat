@@ -1,2 +1,2 @@
-!data/waChat.txt
 data/*
+!data/waChat.txt
