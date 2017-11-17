@@ -121,16 +121,19 @@ senderPosts <- function(file_in='data/testChat.txt'){
   postCount <- transform(postCount, name = reorder(name, posts))
   
   if(max(postCount$posts) <= 100){
-    division = 10
+    division = 20
   }
-  else if(max(postCount$posts) > 100 & max(postCount$posts) < 500){
+  else if(max(postCount$posts) > 100 & max(postCount$posts) < 200){
     division = 50
   }
-  else if(max(postCount$posts) > 500 & max(postCount$posts) < 1000){
+  else if(max(postCount$posts) > 200 & max(postCount$posts) < 500){
     division = 100
   }
-  else{
+  else if(max(postCount$posts) > 500 & max(postCount$posts) < 1000){
     division = 200
+  }
+  else{
+    division = 250
   }
   
   # Plot bar
@@ -154,15 +157,16 @@ senderPosts <- function(file_in='data/testChat.txt'){
 wordFreq <- function(file_in='data/testChat.txt', wordlength=3){
   data <- parseR(file=file_in)
   
-  removeURL <- content_transformer(function(x) gsub("(f|ht)tp(s?)://\\S+", "", x, perl=T))
+  data$message <- gsub("(.*http.*)", "", data$message)  
+  data$message <- gsub("(.+www\\S+)", "", data$message)
+  
   
   docs <- Corpus(VectorSource(data$message)) %>%
-    tm_map(removeURL) %>%
     tm_map(removePunctuation) %>%
     tm_map(removeNumbers) %>%
     tm_map(content_transformer(tolower))  %>%
     tm_map(removeWords, stopwords("english")) %>%
-    tm_map(removeWords, c("omitted", "image", 'https', 'video')) %>%
+    tm_map(removeWords, c("omitted", "image", 'video')) %>%
     tm_map(stripWhitespace)
   
   # dataframe of terms
@@ -174,7 +178,6 @@ wordFreq <- function(file_in='data/testChat.txt', wordlength=3){
   all <- all %>% 
     # NOT working! 
     filter(nchar(as.character(word))>=wordlength) %>%
-    filter(!grepl('http', word)) %>%
     droplevels()
   
   d <- all[1:20,]
@@ -219,15 +222,15 @@ wordFreq <- function(file_in='data/testChat.txt', wordlength=3){
 chatCloud <- function(file_in='data/testChat.txt',user=NA,wordlength=3){
   data <- parseR(file=file_in,user=user)
   
-  removeURL <- content_transformer(function(x) gsub("(f|ht)tp(s?)://\\S+", "", x, perl=T))
+  data$message <- gsub("(.*http.*)", "", data$message)  
+  data$message <- gsub("(.+www\\S+)", "", data$message)
   
   docs <- Corpus(VectorSource(data$message)) %>%
-    tm_map(removeURL) %>%
     tm_map(removePunctuation) %>%
     tm_map(removeNumbers) %>%
     tm_map(content_transformer(tolower))  %>%
     tm_map(removeWords, stopwords("english")) %>%
-    tm_map(removeWords, c("omitted", "image", 'http', 'video')) %>%
+    tm_map(removeWords, c("omitted", "image", 'video')) %>%
     tm_map(stripWhitespace)
   
   # dataframe of terms
