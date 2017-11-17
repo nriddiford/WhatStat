@@ -27,12 +27,16 @@ shinyUI(fluidPage(
                            accept=c(".txt", ".zip")
                            ),
                  
+                 
+                 tags$div(class="header", checked=NA,
+                          tags$p("To see instructions of how to export your WhatsApp chat log"),
+                          tags$a(href="https://github.com/nriddiford/WhatStat/blob/master/README.md", "Click Here!")
+                 ),
                  tags$br()
                  
                ),
                mainPanel(
-                 tableOutput('contents'),
-                 plotOutput('messageCount')
+                 tableOutput('contents')
                )
              )
     ),
