@@ -15,15 +15,15 @@
 
 
 library(shiny)
-suppressMessages(library(ggplot2))
-suppressMessages(library(dplyr))
-suppressMessages(library(plyr))
-suppressMessages(library(tidyr))
+suppressMessages(library(tidyverse))
+# suppressMessages(library(dplyr))
+# suppressMessages(library(plyr))
+# suppressMessages(library(tidyr))
+suppressMessages(library(tools))
 suppressMessages(library(RColorBrewer))
 suppressMessages(library(tm))
 suppressMessages(library(SnowballC))
 suppressMessages(library(reshape))
-suppressMessages(library(plotly))
 suppressMessages(library(stringr))
 suppressMessages(library(VennDiagram))
 suppressMessages(library(lubridate))
@@ -48,11 +48,18 @@ cleanTheme <- function(base_size = 12){
   )
 }
 
-parseR <- function(file='data/testChat.txt',drop="44", user=NA){
+parseR <- function(in_file='data/testChat.txt',drop="44", user=NA){
+  
+  if(file_ext(in_file)=='zip'){
+    # cat("Zipped file")
+    suppressMessages(rawData<-unlist(read_table(in_file)))
+  }
 
-  rawData<-scan(file, what="", sep="\n")
+  else{
+    rawData<-scan(in_file, what="", sep="\n")
+  }
   
-  
+
   joinedData <- rep(NA, length(rawData))
   
   gr <- 1
@@ -111,7 +118,7 @@ parseR <- function(file='data/testChat.txt',drop="44", user=NA){
 }
 
 senderPosts <- function(file_in='data/testChat.txt'){
-  data <- parseR(file=file_in)
+  data <- parseR(in_file=file_in)
   
   postCount<-as.data.frame(cbind(table(data$sender)))
   postCount <- data.frame(names = row.names(postCount), postCount)
@@ -155,7 +162,7 @@ senderPosts <- function(file_in='data/testChat.txt'){
 
 
 wordFreq <- function(file_in='data/testChat.txt', wordlength=3){
-  data <- parseR(file=file_in)
+  data <- parseR(in_file=file_in)
   
   data$message <- gsub("(.*http.*)", "", data$message)  
   data$message <- gsub("(.+www\\S+)", "", data$message)
@@ -199,7 +206,7 @@ wordFreq <- function(file_in='data/testChat.txt', wordlength=3){
   
   
   p <- ggplot(d)
-  p <- p + geom_bar(aes(word, freq, fill="tomato3"),stat='identity')
+  p <- p + geom_bar(aes(word, freq, fill="springgreen3"),stat='identity')
   p <- p + scale_y_continuous("Word frequency", breaks=seq(0,max(d$freq),by=division),expand=c(0.01,0))
   p <- p + scale_x_discrete("Word", expand = c(0.01,0.01))
   
@@ -220,7 +227,7 @@ wordFreq <- function(file_in='data/testChat.txt', wordlength=3){
 
 
 chatCloud <- function(file_in='data/testChat.txt',user=NA,wordlength=3){
-  data <- parseR(file=file_in,user=user)
+  data <- parseR(in_file=file_in,user=user)
   
   data$message <- gsub("(.*http.*)", "", data$message)  
   data$message <- gsub("(.+www\\S+)", "", data$message)
@@ -259,7 +266,7 @@ shinyServer(function(input, output, session) {
     
     inFile <- input$file1 
     
-    df <- parseR(file=inFile$datapath) # Call my parser function 
+    df <- parseR(in_file=inFile$datapath) # Call my parser function 
     
     return(df)
   })

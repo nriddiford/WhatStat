@@ -24,7 +24,7 @@ shinyUI(fluidPage(
              sidebarLayout(
                sidebarPanel(
                  fileInput('file1', 'Select your WhatsApp chat log',
-                           accept='.txt'
+                           accept=c(".txt", ".zip")
                            ),
                  
                  tags$br()
@@ -55,7 +55,7 @@ shinyUI(fluidPage(
     # Tab 3
     tabPanel("Word Frequency",
              pageWithSidebar(
-               headerPanel('Most commonly used words'),
+               headerPanel('Most common words'),
                sidebarPanel(
                  
                  sliderInput("wlength", "Minimum word length",
@@ -70,9 +70,9 @@ shinyUI(fluidPage(
     ),
     
     # Tab 4
-    tabPanel("Chat Cloud",
+    tabPanel("Word Cloud",
              pageWithSidebar(
-               headerPanel('Word cloud of most used words'),
+               headerPanel('Chat cloud of most common words'),
                sidebarPanel(
                  selectInput('user', 'Sender', ""),
                  sliderInput("cwlength", "Minimum word length",

@@ -13,24 +13,23 @@
 # limitations under the License.
 
 
-list.of.packages <- c('ggplot2', 'RColorBrewer',
+list.of.packages <- c('RColorBrewer',
                       'tm', 'SnowballC',
-                      'reshape', 'wordcloud', 'stringr', 'dplyr', 'plyr', 'plotly', 'lubridate')
+                      'reshape', 'wordcloud', 'stringr', 'tidyverse', 'lubridate')
 new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
 if(length(new.packages)){
   cat('Installing missing packages...\n')
   install.packages(new.packages)
 }
 cat('Silently loading packages...')
-suppressMessages(library(ggplot2))
-suppressMessages(library(dplyr))
-suppressMessages(library(plyr))
-suppressMessages(library(tidyr))
+suppressMessages(library(tidyverse))
+# suppressMessages(library(dplyr))
+# suppressMessages(library(plyr))
+# suppressMessages(library(tidyr))
 suppressMessages(library(RColorBrewer))
 suppressMessages(library(tm))
 suppressMessages(library(SnowballC))
 suppressMessages(library(reshape))
-suppressMessages(library(plotly))
 suppressMessages(library(stringr))
 suppressMessages(library(VennDiagram))
 suppressMessages(library(lubridate))
@@ -59,9 +58,16 @@ cleanTheme <- function(base_size = 12){
 }
 
 
-parseR <- function(file='data/waChat.txt',drop="44", user=NA){
+parseR <- function(in_file='data/waChat.txt',drop="44", user=NA){
+  
+  if(file_ext(in_file)=='zip'){
+    cat("Zipped file")
+    rawData<-unlist(read_table(in_file))
+  }
  
-  rawData<-scan(file, what="", sep="\n")
+  else{
+    rawData<-scan(file, what="", sep="\n")
+  }
   
   joinedData <- rep(NA, length(rawData))
   
