@@ -14,9 +14,34 @@
 
 library(shiny)
 
-suppressMessages(library("wordcloud"))
+
 shinyUI(fluidPage(
-  titlePanel("WhatStat"),
+  
+  tags$head(HTML(
+    "<script>
+    (function(i,s,o,g,r,a,m){
+    i['GoogleAnalyticsObject']=r;i[r]=i[r]||
+    function(){
+    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();
+    a=s.createElement(o), m=s.getElementsByTagName(o)[0];
+    a.async=1;
+    a.src=g;m.parentNode.insertBefore(a,m)
+    })
+    (window, document, 'script',
+    '//www.google-analytics.com/analytics.js','ga');
+    
+    ga('create', 'UA-109758097-1', 'auto');
+    ga('send', 'pageview');
+    
+    </script>"
+  )),
+  
+  navbarPage("WhatStat"),
+  
+  # tabsetPanel or navlistPanel ?
+
+  
+  
   tabsetPanel(
     # Tab 1
     tabPanel("Upload File",
@@ -28,6 +53,7 @@ shinyUI(fluidPage(
                            ),
                  
                  
+                 
                  tags$div(class="header", checked=NA,
                           tags$p("To see instructions of how to export your WhatsApp chat log"),
                           tags$a(href="https://github.com/nriddiford/WhatStat/blob/master/README.md", "Click Here!")
@@ -36,6 +62,11 @@ shinyUI(fluidPage(
                  
                ),
                mainPanel(
+                 
+                 h3("Welcome to WhatStat - an online tool to visualise your WhatsApp chats"),
+                 p("To start, you need to export your WhatsApp chat log and upload it (follow link in 'click Here!' to see further details"),
+                 p("Once the file is uploaded, the first 25 lines of your chat will be displayed below!"),
+                 p("If you're uploading a .zip file and it doesn't word, try unzipping the file first and try again!"),
                  tableOutput('contents')
                )
              )
@@ -76,7 +107,7 @@ shinyUI(fluidPage(
     # Tab 4
     tabPanel("Word Cloud",
              pageWithSidebar(
-               headerPanel('Chat cloud of most common words'),
+               headerPanel('Word cloud of most common words'),
                sidebarPanel(
                  selectInput('user', 'Sender', ""),
                  sliderInput("cwlength", "Minimum word length",
@@ -86,7 +117,36 @@ shinyUI(fluidPage(
                  plotOutput('wCloud')
                )
              )
+    ),
+  
+    # Tab 5
+    tabPanel("Time of day",
+             pageWithSidebar(
+               headerPanel('When are messages sent?'),
+               sidebarPanel(
+                 selectInput('Tuser', 'Sender', "")
+               ),
+               mainPanel(
+                 plotOutput('timePlot')
+               )
+             )
+    ),
+    
+    # Tab 4
+    tabPanel("Date",
+             pageWithSidebar(
+               headerPanel('Message history'),
+               sidebarPanel(
+                 selectInput('Duser', 'Sender', ""),
+                 selectInput('Dyear', 'Year', "")
+               ),
+               mainPanel(
+                 plotOutput('datePlot')
+               )
+             )
     )
+    
+    
     
   )
 )

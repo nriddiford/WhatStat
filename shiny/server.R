@@ -16,9 +16,6 @@
 
 library(shiny)
 suppressMessages(library(tidyverse))
-# suppressMessages(library(dplyr))
-# suppressMessages(library(plyr))
-# suppressMessages(library(tidyr))
 suppressMessages(library(tools))
 suppressMessages(library(RColorBrewer))
 suppressMessages(library(tm))
@@ -27,7 +24,10 @@ suppressMessages(library(reshape))
 suppressMessages(library(stringr))
 suppressMessages(library(VennDiagram))
 suppressMessages(library(lubridate))
-suppressMessages(library("wordcloud"))
+suppressMessages(library(wordcloud))
+library(scales)
+suppressMessages(library(plotly))
+
 
 cleanTheme <- function(base_size = 12){
   theme(
@@ -58,14 +58,13 @@ parseR <- function(in_file='data/testChat.txt',drop="44", user=NA){
   else{
     rawData<-scan(in_file, what="", sep="\n")
   }
-  
 
   joinedData <- rep(NA, length(rawData))
   
   gr <- 1
   for (i in 1:length(rawData)) {
     # if starting with timestamp, save into out and move on (gr)
-    find.startline <- grepl("^\\d{2}\\/\\d{2}\\/\\d{4}", rawData[i])
+    find.startline <- grepl("^\\d{1,2}\\/\\d{1,2}\\/\\d{2,4}", rawData[i])
     if (find.startline) {
       joinedData[gr] <- rawData[i]
       gr <- gr + 1
@@ -84,15 +83,11 @@ parseR <- function(in_file='data/testChat.txt',drop="44", user=NA){
   joinedData <- as.data.frame(joinedData,row.names = NULL, optional = FALSE )
   colnames(joinedData)<-'V1'
   
-  # replace '/' with spaces
-  joinedData$V1<-gsub("/", " ", joinedData$V1)
-  
-  # Replace emojis with '[emoji]'
-  # joinedData$V1<-gsub("\\U00", "[emoji]", joinedData$V1)
-  
   sepData<-suppressWarnings(separate(joinedData, V1, c("datetime", "sender", "message"), sep = ": ", extra = "merge"))
   
   sepData$message <- trimws(sepData$message)
+  sepData$message<-gsub("/", " ", sepData$message)
+  
   sepData$sender<-factor(sepData$sender)
   
   if(!is.na(user)){
@@ -111,8 +106,8 @@ parseR <- function(in_file='data/testChat.txt',drop="44", user=NA){
   data$datetime<-dmy_hms(data$datetime)
   
   cleanData<-separate(data, datetime, c("date", "time"), sep = " ", remove =TRUE)
-  cleanData$date<-ymd(cleanData$date)
-  cleanData$time<-hms(cleanData$time)
+  # cleanData$date<-dmy(cleanData$date)
+  # cleanData$time<-hms(cleanData$time)
   
   return(cleanData)
 }
@@ -183,7 +178,6 @@ wordFreq <- function(file_in='data/testChat.txt', wordlength=3){
   all <- data.frame(word = names(v),freq=v)
   
   all <- all %>% 
-    # NOT working! 
     filter(nchar(as.character(word))>=wordlength) %>%
     droplevels()
   
@@ -227,6 +221,9 @@ wordFreq <- function(file_in='data/testChat.txt', wordlength=3){
 
 
 chatCloud <- function(file_in='data/testChat.txt',user=NA,wordlength=3){
+  if(user=='All'){
+    user=NA
+  }
   data <- parseR(in_file=file_in,user=user)
   
   data$message <- gsub("(.*http.*)", "", data$message)  
@@ -258,6 +255,65 @@ chatCloud <- function(file_in='data/testChat.txt',user=NA,wordlength=3){
 }
 
 
+senderTime <- function (file_in='data/testChat.txt', user=NA) {
+  
+  if(user=='All'){
+    user=NA
+  }
+  data <- parseR(in_file=file_in,user=user)
+  data$time <- hms(data$time)
+  data$hour<-lubridate::hour(data$time)
+  labs<-c("12am", "", "2am", "", "4am", "", "6am", "", "8am", "", "10am", "", "12pm", "", "2pm", "", "4pm", "", "6pm", "", "8pm", "", "10pm", "")
+  
+  # maxPosts<-max(table(data$sender))
+
+  # p<- plot_ly(x = ~data$hour, type = 'histogram', mode = 'lines', fill = 'tozeroy') %>%
+  #   layout(xaxis = list(title = 'Carat'),
+  #          yaxis = list(title = 'Density'))
+  # 
+  
+    p <- ggplot(data)
+    p <- p + geom_density(aes(hour, (..count..), fill = sender), stat='count', adjust = .25, alpha=0.5, show.legend=T)
+    
+    p <- p + scale_x_continuous("Time", breaks=seq(0,23, by=1), labels=labs)
+    p <- p + scale_y_continuous("Number of posts")
+    # p <- p + facet_wrap(~sender,ncol=2)
+    p <- p + cleanTheme() +
+      theme(axis.text.x = element_text(angle = 90, hjust=1),
+            panel.grid.major.x = element_line(color="grey80", size = 0.5, linetype = "dotted"),
+            axis.title.x=element_blank()
+           )
+  p
+  
+}
+
+senderDate <- function(file_in='data/testChat.txt',user=NA,filtYear=NA){
+  if(user=='All'){
+    user=NA
+  }
+  data <- parseR(in_file=file_in,user=user)
+  data$date <- ymd(data$date)
+  data$year<-year(data$date)
+  data <- filter(data, year == filtYear)
+  
+  data$month<-month(data$date,label = TRUE,abbr = TRUE)
+  
+  
+  labs=levels(data$month)
+  
+  p <- ggplot(data)
+  p <- p + geom_density(aes(date, (..count..), fill = sender), alpha=0.4, adjust = .25, show.legend=T)
+  # p <- p + scale_x_discrete("Time", breaks=seq(1,length(labs), by=1), labels=labs)
+  p <- p + scale_y_continuous("Number of posts")
+  p <- p + scale_x_date(date_breaks="1 month", date_labels="%B")
+  # p <- p + scale_x_date(breaks = "1 month", minor_breaks = "1 week", date_labels = "%B")
+  p <- p +cleanTheme() + 
+    theme(axis.text.x = element_text(angle = 90, hjust=1),
+        panel.grid.major.x = element_line(color="grey80", size = 0.5, linetype = "dotted"),
+        axis.title.x=element_blank()
+    )
+  p
+}
 
 shinyServer(function(input, output, session) {
   
@@ -302,7 +358,7 @@ shinyServer(function(input, output, session) {
   observe({
     df = data()
     updateSelectInput(session, inputId = 'user', label = 'Sender',
-                      choices = levels(df$sender), selected = 'NA')
+                      choices = c("All", levels(df$sender)), selected = 'NA')
     updateSelectInput(session, inputId = 'cwlength', label = 'Word length',
                       choices = c(3:5), selected = 3)
   })
@@ -311,6 +367,31 @@ shinyServer(function(input, output, session) {
   output$wCloud <-renderPlot({
     chatCloud(file_in=input$file1$datapath,user=input$user, wordlength=input$cwlength)
     
+  })
+  
+  observe({
+    df = data()
+    updateSelectInput(session, inputId = 'Tuser', label = 'Sender',
+                      choices = c("All", levels(df$sender)), selected = 'NA')
+  })
+  
+  # tabPanel 4
+  output$timePlot <-renderPlot({
+    senderTime(file_in=input$file1$datapath,user=input$Tuser)
+  })
+  
+  observe({
+    df = data()
+    updateSelectInput(session, inputId = 'Duser', label = 'Sender',
+                      choices = c("All", levels(df$sender)), selected = 'NA')
+    
+    updateSelectInput(session, inputId = 'Dyear', label = 'Year',
+                      choices = levels(factor(year(df$date))))
+  })
+  
+  # tabPanel 5
+  output$datePlot <-renderPlot({
+    senderDate(file_in=input$file1$datapath,user=input$Duser,filtYear=input$Dyear)
   })
     
 })

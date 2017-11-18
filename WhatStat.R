@@ -58,15 +58,15 @@ cleanTheme <- function(base_size = 12){
 }
 
 
-parseR <- function(in_file='data/waChat.txt',drop="44", user=NA){
+parseR <- function(in_file='data/DoolsWA.txt',drop="44", user=NA){
   
   if(file_ext(in_file)=='zip'){
-    cat("Zipped file")
+    cat("Zipped file\n")
     rawData<-unlist(read_table(in_file))
   }
  
-  else{
-    rawData<-scan(file, what="", sep="\n")
+  else {
+    rawData<-scan(in_file, what="", sep="\n")
   }
   
   joinedData <- rep(NA, length(rawData))
@@ -74,7 +74,7 @@ parseR <- function(in_file='data/waChat.txt',drop="44", user=NA){
   gr <- 1
   for (i in 1:length(rawData)) {
     # if starting with timestamp, save into out and move on (gr)
-    find.startline <- grepl("^\\d{2}\\/\\d{2}\\/\\d{4}", rawData[i])
+    find.startline <- grepl("^\\d{1,2}\\/\\d{1,2}\\/\\d{2,4}", rawData[i])
     if (find.startline) {
       joinedData[gr] <- rawData[i]
       gr <- gr + 1
@@ -93,17 +93,11 @@ parseR <- function(in_file='data/waChat.txt',drop="44", user=NA){
   joinedData <- as.data.frame(joinedData,row.names = NULL, optional = FALSE )
   colnames(joinedData)<-'V1'
 
-  
-  joinedData$V1<-gsub("http", ' ', joinedData$V1)
-  # replace '/' with spaces
-  joinedData$V1<-gsub("/", " ", joinedData$V1)
-  
-  # Replace emojis with '[emoji]'
-  joinedData$V1<-gsub("\\U00", "[emoji]", joinedData$V1)
-  
   sepData<-suppressWarnings(separate(joinedData, V1, c("datetime", "sender", "message"), sep = ": ", extra = "merge"))
   
   sepData$message <- trimws(sepData$message)
+  sepData$message<-gsub("/", " ", sepData$message)
+  
   sepData$sender<-factor(sepData$sender)
   
   if(!is.na(user)){
@@ -119,6 +113,7 @@ parseR <- function(in_file='data/waChat.txt',drop="44", user=NA){
   data$datetime<-dmy_hms(data$datetime)
   
   cleanData<-separate(data, datetime, c("date", "time"), sep = " ", remove =TRUE)
+  
   cleanData$date<-ymd(cleanData$date)
   cleanData$time<-hms(cleanData$time)
 
@@ -126,36 +121,48 @@ parseR <- function(in_file='data/waChat.txt',drop="44", user=NA){
 }
 
 
-senderDate <- function(){
+senderDate <- function(file_in='data/testChat.txt',user=NA){
+  if(user=='All'){
+    user=NA
+  }
   data<-parseR()
+  data$date <- ymd(data$date)
+  
+  data$month<-month(data$date,label = TRUE,abbr = TRUE)
+  data$year<-year(data$date)
+  
+  # data <- filter(data, year == filtYear)
   # data$month<-lubridate::month(data$date,label = TRUE,abbr = TRUE)
   # data<-droplevels(data)
   
 
-  if (nrow(table(data$sender))==1){
+  # if (nrow(table(data$sender))==1){
+  #   p <- ggplot(data)
+  #   p <- p + geom_bar(aes(date, (..count..), fill = "deepskyblue1"),binwidth = 30, stat='count',colour='black')
+  #   p <- p + scale_y_continuous("Number of posts")
+  #   p <- p + scale_x_date("Date", date_breaks="months", date_labels="%b")
+  #   p <- p + cleanTheme()
+  #   p <- p + scale_fill_identity()
+  #   
+  # }
+  # else {
     p <- ggplot(data)
-    p <- p + geom_bar(aes(date, (..count..), fill = "deepskyblue1"),binwidth = 30, stat='count',colour='black')
-    p <- p + scale_y_continuous("Number of posts")
-    p <- p + scale_x_date("Date", date_breaks="months", date_labels="%b")
-    p <- p +cleanTheme()
-    p <- p + scale_fill_identity()
-    
-  }
-  else {
-    p <- ggplot(data)
-    p <- p + geom_density(aes(date, (..count..),fill=sender), stat='count', alpha=0.6,show.legend=F)
+    p <- p + geom_density(aes(as.Date(date), (..count..),fill=sender), stat='count', alpha=0.6,show.legend=F)
     p <- p + scale_y_continuous("Number of posts")
     p <- p + scale_x_date("Date", date_breaks="months", date_labels="%b")
     p <- p +cleanTheme()
     p <- p + facet_wrap(~sender,ncol = 2)
-    n
-  }
+    p
+  # }
   p
 }
 
 
-senderTime <- function () {
-  data <- parseR()
+senderTime <- function (file_in='data/waChat.txt', user=NA) {
+  if(user=='All'){
+    user=NA
+  }
+  data <- parseR(in_file=file_in,user=user)
   data$hour<-lubridate::hour(data$time)
   
   if (nrow(table(data$sender))==1){
@@ -192,7 +199,7 @@ senderTime <- function () {
 
 
 senderPosts <- function(file_in='data/waChat.txt', user=NA){
-  data <- parseR(file=file_in,user=user)
+  data <- parseR(in_file=file_in,user=user)
   
   postCount<-as.data.frame(cbind(table(data$sender)))
   postCount <- data.frame(names = row.names(postCount), postCount)
