@@ -281,7 +281,8 @@ senderTime <- function (file_in='data/testChat.txt', user=NA) {
     p <- p + cleanTheme() +
       theme(axis.text.x = element_text(angle = 90, hjust=1),
             panel.grid.major.x = element_line(color="grey80", size = 0.5, linetype = "dotted"),
-            axis.title.x=element_blank()
+            axis.title.x=element_blank(),
+            legend.position="bottom"
            )
   p
   
@@ -310,7 +311,8 @@ senderDate <- function(file_in='data/testChat.txt',user=NA,filtYear=NA){
   p <- p +cleanTheme() + 
     theme(axis.text.x = element_text(angle = 90, hjust=1),
         panel.grid.major.x = element_line(color="grey80", size = 0.5, linetype = "dotted"),
-        axis.title.x=element_blank()
+        axis.title.x=element_blank(),
+        legend.position="bottom"
     )
   p
 }
@@ -345,7 +347,7 @@ shinyServer(function(input, output, session) {
   
   observe({
     df = data()
-    updateSelectInput(session, inputId = 'wlength', label = 'Word length',
+    updateSelectInput(session, inputId = 'wlength', label = 'Minimum word length',
                       choices = c(3:5), selected = 3)
   })
   
@@ -359,7 +361,7 @@ shinyServer(function(input, output, session) {
     df = data()
     updateSelectInput(session, inputId = 'user', label = 'Sender',
                       choices = c("All", levels(df$sender)), selected = 'NA')
-    updateSelectInput(session, inputId = 'cwlength', label = 'Word length',
+    updateSelectInput(session, inputId = 'cwlength', label = 'Minimum word length',
                       choices = c(3:5), selected = 3)
   })
   

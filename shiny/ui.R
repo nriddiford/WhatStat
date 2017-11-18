@@ -76,11 +76,7 @@ shinyUI(fluidPage(
     tabPanel("Post Count",
              pageWithSidebar(
                headerPanel('Number of posts per user'),
-               sidebarPanel(
-                 
-                 # "Empty inputs" - they will be updated after the data is uploaded
-                 selectInput('sender', 'Sender', "")
-               ),
+               sidebarPanel(),
                mainPanel(
                  plotOutput('postCount')
                )
@@ -107,7 +103,7 @@ shinyUI(fluidPage(
     # Tab 4
     tabPanel("Word Cloud",
              pageWithSidebar(
-               headerPanel('Word cloud of most common words'),
+               headerPanel('Word cloud of chat'),
                sidebarPanel(
                  selectInput('user', 'Sender', ""),
                  sliderInput("cwlength", "Minimum word length",
@@ -135,7 +131,7 @@ shinyUI(fluidPage(
     # Tab 4
     tabPanel("Date",
              pageWithSidebar(
-               headerPanel('Message history'),
+               headerPanel('Chat history'),
                sidebarPanel(
                  selectInput('Duser', 'Sender', ""),
                  selectInput('Dyear', 'Year', "")
