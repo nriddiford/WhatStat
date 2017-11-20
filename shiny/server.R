@@ -168,7 +168,6 @@ wordFreq <- function(file_in='data/testChat.txt', wordlength=3){
   data$message <- gsub("(.*http.*)", "", data$message)  
   data$message <- gsub("(.+www\\S+)", "", data$message)
   
-  
   docs <- Corpus(VectorSource(data$message)) %>%
     tm_map(removePunctuation) %>%
     tm_map(removeNumbers) %>%
@@ -187,23 +186,18 @@ wordFreq <- function(file_in='data/testChat.txt', wordlength=3){
     filter(nchar(as.character(word))>=wordlength) %>%
     droplevels()
   
-  d <- all[1:20,]
+  d <- all[1:15,]
   d  <- transform(d , word = reorder(word, freq))
-  
   
   if(max(d$freq) <= 10){
     division = 2
   }
-  else if(max(d$freq) > 10 & max(d$freq) < 50){
-    division = 5
-  }
-  else if(max(d$freq) > 50 & max(d$freq) < 100){
+  else if(max(d$freq) > 10 & max(d$freq) < 100){
     division = 10
   }
   else{
     division = 20
   }
-  
   
   p <- ggplot(d)
   p <- p + geom_bar(aes(word, freq, fill="springgreen3"),stat='identity')
@@ -218,10 +212,6 @@ wordFreq <- function(file_in='data/testChat.txt', wordlength=3){
       panel.grid.major.x = element_line(color="grey80", size = 0.5, linetype = "dotted")
       
     )
-    # theme(axis.text.y = element_text(angle = 90, hjust=1, vjust=0.5),
-    #       axis.text = element_text(size=20),
-    #       axis.title.x=element_blank()
-    #       )
   p <- p + scale_fill_identity()
   p <- p + coord_flip()
   p
@@ -297,22 +287,7 @@ senderTime <- function (file_in='data/waChat.txt', user=NA) {
           axis.title.x=element_blank(),
           legend.position="bottom"
     )
-  # p <- p + scale_fill_manual(values=cols)  
   p
-  #   p <- ggplot(data)
-  #   p <- p + geom_density(aes(hour, (..count..), fill = sender), stat='count', adjust = .25, alpha=0.5, show.legend=T)
-  #   
-  #   p <- p + scale_x_continuous("Time", breaks=seq(0,23, by=1), labels=labs)
-  #   p <- p + scale_y_continuous("Number of posts")
-  #   # p <- p + facet_wrap(~sender,ncol=2)
-  #   p <- p + cleanTheme() +
-  #     theme(axis.text.x = element_text(angle = 90, hjust=1),
-  #           panel.grid.major.x = element_line(color="grey80", size = 0.5, linetype = "dotted"),
-  #           axis.title.x=element_blank(),
-  #           legend.position="bottom"
-  #          )
-  # p
-  
 }
 
 senderDate <- function(file_in='data/DoolsWA.txt',user=NA,filtYear=NA){
@@ -334,17 +309,15 @@ senderDate <- function(file_in='data/DoolsWA.txt',user=NA,filtYear=NA){
 
   maxPosts<-max(table(week(allData$date),allData$year))
   
-  labs=levels(allData$month)
+  # labs=levels(allData$month)
   
   n<-length(levels(allData$sender))
   cols = gg_color_hue(n)
   
   months <- c("January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December")
   
-  # p <- ggplot(data)
-  
   p <- ggplot(data, aes(as.Date(date), fill=sender))
-  p <- p + geom_area(aes(group = sender, colour = sender), stat='bin',position="stack",binwidth=7, alpha = 0.5)
+  p <- p + geom_area(aes(group = sender, colour = sender), stat='bin',position="stack",binwidth=14, alpha = 0.5)
   
   if(!is.na(user)){
     p <- p + scale_y_continuous("Number of posts", limits=c(0, maxPosts))
@@ -352,8 +325,6 @@ senderDate <- function(file_in='data/DoolsWA.txt',user=NA,filtYear=NA){
   else{
     p <- p + scale_y_continuous("Number of posts")
   }
-  # p <- p + scale_y_continuous("Number of posts", limits=c(0, maxPosts))
-  # p <- p + scale_x_continuous("Date", breaks=seq(0,12, by=1), labels=levels(allData$month))
   p <- p + scale_x_date(date_breaks="1 month", date_labels="%B", expand=c(0,0))
   p <- p + cleanTheme() + 
     theme(axis.text.x = element_text(angle = 90, hjust=1,vjust = 0.5),
@@ -365,23 +336,6 @@ senderDate <- function(file_in='data/DoolsWA.txt',user=NA,filtYear=NA){
   # p <- p + scale_fill_manual(values=cols)  
   p
   
-  
-  
-  # p <- p + geom_area(aes(month, (..count..), fill = sender), stat='bin',alpha=0.6)
-  # # p <- p + scale_x_discrete(breaks=seq(1,length(labs), by=4), labels=months)
-  # 
-  # p <- p + scale_y_continuous("Number of posts", limits=c(0, maxPosts))
-  # # p <- p + scale_x_date(date_breaks="1 month", date_labels="%B")
-  # # ]]p <- p + scale_x_date(breaks = "1 month", minor_breaks = "1 week", date_labels = "%B")
-  # p <- p + cleanTheme() + 
-  #   theme(axis.text.x = element_text(angle = 90, hjust=1),
-  #       panel.grid.major.y = element_line(color="grey80", size = 0.5, linetype = "dotted"),
-  #       axis.title.x=element_blank(),
-  #       legend.position="bottom"
-  #   )
-  # # p <- p + scale_fill_manual(values=cols)  
-  # p
-  
 }
 
 shinyServer(function(input, output, session) {
@@ -391,7 +345,7 @@ shinyServer(function(input, output, session) {
     
     inFile <- input$file1 
     
-    df <- parseR(in_file=inFile$datapath) # Call my parser function 
+    df <- parseR(in_file=inFile$datapath)
     
     return(df)
   })
@@ -406,7 +360,7 @@ shinyServer(function(input, output, session) {
     head(data(), 25)
   })
   
-  # tabPanel 1
+  # tabPanel 1 - Number of messages
   output$postCount <-renderPlot({
     senderPosts(file_in=input$file1$datapath)
     
@@ -418,7 +372,7 @@ shinyServer(function(input, output, session) {
                       choices = c(3:5), selected = 3)
   })
   
-  # tabPanel 2
+  # tabPanel 2 - Top words 
   output$wordCount <-renderPlot({
     wordFreq(file_in=input$file1$datapath, wordlength=input$wlength)
     
@@ -432,7 +386,7 @@ shinyServer(function(input, output, session) {
                       choices = c(3:5), selected = 3)
   })
   
-  # tabPanel 3
+  # tabPanel 3 - Word cloud
   output$wCloud <-renderPlot({
     chatCloud(file_in=input$file1$datapath,user=input$user, wordlength=input$cwlength)
     
@@ -444,7 +398,7 @@ shinyServer(function(input, output, session) {
                       choices = c("All", levels(df$sender)), selected = 'NA')
   })
   
-  # tabPanel 4
+  # tabPanel 4 - Messages throughout the day
   output$timePlot <-renderPlot({
     senderTime(file_in=input$file1$datapath,user=input$Tuser)
   })
@@ -458,7 +412,7 @@ shinyServer(function(input, output, session) {
                       choices = levels(factor(year(df$date))))
   })
   
-  # tabPanel 5
+  # tabPanel 5 - Messages throughout years
   output$datePlot <-renderPlot({
     senderDate(file_in=input$file1$datapath,user=input$Duser,filtYear=input$Dyear)
   })
