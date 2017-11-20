@@ -40,12 +40,17 @@ cleanTheme <- function(base_size = 12){
     axis.line.y = element_line(color="black", size = 0.5),
     axis.text = element_text(size=15),
     # axis.title = element_text(size=30),
-    panel.grid.major.x = element_line(color="grey80", size = 0.5, linetype = "dotted"),
+    # panel.grid.major.x = element_line(color="grey80", size = 0.5, linetype = "dotted"),
     # axis.text.x = element_text(angle = 90,vjust = 0.5, hjust=1),
     axis.title.x=element_text(size=15),
     axis.title.y=element_text(size=15),
     strip.text = element_text(size=15)
   )
+}
+
+gg_color_hue <- function(n) {
+  hues = seq(15, 375, length = n + 1)
+  hcl(h = hues, l = 65, c = 100)[1:n]
 }
 
 parseR <- function(in_file='data/testChat.txt',drop="44", user=NA){
@@ -146,7 +151,8 @@ senderPosts <- function(file_in='data/testChat.txt'){
     theme(
       axis.title.x=element_blank(),
       axis.title.y=element_blank(),
-      axis.text = element_text(size=20)
+      axis.text = element_text(size=20),
+      panel.grid.major.x = element_line(color="grey80", size = 0.5, linetype = "dotted")
     )
   p <- p + scale_fill_identity()
   p <- p + coord_flip()
@@ -208,7 +214,9 @@ wordFreq <- function(file_in='data/testChat.txt', wordlength=3){
     theme(
       axis.title.x=element_blank(),
       axis.title.y=element_blank(),
-      axis.text = element_text(size=20)
+      axis.text = element_text(size=20),
+      panel.grid.major.x = element_line(color="grey80", size = 0.5, linetype = "dotted")
+      
     )
     # theme(axis.text.y = element_text(angle = 90, hjust=1, vjust=0.5),
     #       axis.text = element_text(size=20),
@@ -255,7 +263,7 @@ chatCloud <- function(file_in='data/testChat.txt',user=NA,wordlength=3){
 }
 
 
-senderTime <- function (file_in='data/testChat.txt', user=NA) {
+senderTime <- function (file_in='data/waChat.txt', user=NA) {
   
   if(user=='All'){
     user=NA
@@ -265,56 +273,115 @@ senderTime <- function (file_in='data/testChat.txt', user=NA) {
   data$hour<-lubridate::hour(data$time)
   labs<-c("12am", "", "2am", "", "4am", "", "6am", "", "8am", "", "10am", "", "12pm", "", "2pm", "", "4pm", "", "6pm", "", "8pm", "", "10pm", "")
   
-  # maxPosts<-max(table(data$sender))
-
-  # p<- plot_ly(x = ~data$hour, type = 'histogram', mode = 'lines', fill = 'tozeroy') %>%
-  #   layout(xaxis = list(title = 'Carat'),
-  #          yaxis = list(title = 'Density'))
-  # 
   
-    p <- ggplot(data)
-    p <- p + geom_density(aes(hour, (..count..), fill = sender), stat='count', adjust = .25, alpha=0.5, show.legend=T)
-    
-    p <- p + scale_x_continuous("Time", breaks=seq(0,23, by=1), labels=labs)
+  allData <- parseR(in_file=file_in,user=NA)
+  allData$time <- hms(allData$time)
+  allData$hour<-lubridate::hour(allData$time)
+
+  maxPosts<-max(table(allData$hour))
+  
+  p <- ggplot(data, aes(hour, fill=sender))
+  p <- p + geom_area(aes(group = sender, colour = sender), stat='bin',position="stack",binwidth=1, alpha = 0.5)
+  if(!is.na(user)){
+    p <- p + scale_y_continuous("Number of posts", limits=c(0, maxPosts))
+  }
+  else{
     p <- p + scale_y_continuous("Number of posts")
-    # p <- p + facet_wrap(~sender,ncol=2)
-    p <- p + cleanTheme() +
-      theme(axis.text.x = element_text(angle = 90, hjust=1),
-            panel.grid.major.x = element_line(color="grey80", size = 0.5, linetype = "dotted"),
-            axis.title.x=element_blank(),
-            legend.position="bottom"
-           )
+  }
+  p <- p + scale_x_continuous("Time", breaks=seq(0,23, by=1), labels=labs)
+  
+  # p <- p + scale_x_date(date_breaks="1 month", date_labels="%B")
+  p <- p + cleanTheme() + 
+    theme(axis.text.x = element_text(angle = 90, hjust=1),
+          panel.grid.major.y = element_line(color="grey80", size = 0.5, linetype = "dotted"),
+          axis.title.x=element_blank(),
+          legend.position="bottom"
+    )
+  # p <- p + scale_fill_manual(values=cols)  
   p
+  #   p <- ggplot(data)
+  #   p <- p + geom_density(aes(hour, (..count..), fill = sender), stat='count', adjust = .25, alpha=0.5, show.legend=T)
+  #   
+  #   p <- p + scale_x_continuous("Time", breaks=seq(0,23, by=1), labels=labs)
+  #   p <- p + scale_y_continuous("Number of posts")
+  #   # p <- p + facet_wrap(~sender,ncol=2)
+  #   p <- p + cleanTheme() +
+  #     theme(axis.text.x = element_text(angle = 90, hjust=1),
+  #           panel.grid.major.x = element_line(color="grey80", size = 0.5, linetype = "dotted"),
+  #           axis.title.x=element_blank(),
+  #           legend.position="bottom"
+  #          )
+  # p
   
 }
 
-senderDate <- function(file_in='data/testChat.txt',user=NA,filtYear=NA){
+senderDate <- function(file_in='data/DoolsWA.txt',user=NA,filtYear=NA){
   if(user=='All'){
     user=NA
   }
   data <- parseR(in_file=file_in,user=user)
+  
   data$date <- ymd(data$date)
   data$year<-year(data$date)
   data <- filter(data, year == filtYear)
   
   data$month<-month(data$date,label = TRUE,abbr = TRUE)
   
+  allData <- parseR(in_file=file_in,user=NA)
+  allData$date <- ymd(allData$date)
+  allData$year<-year(allData$date)
+  allData$month<-month(allData$date,label = TRUE,abbr = TRUE)
+
+  maxPosts<-max(table(week(allData$date),allData$year))
   
-  labs=levels(data$month)
+  labs=levels(allData$month)
   
-  p <- ggplot(data)
-  p <- p + geom_density(aes(date, (..count..), fill = sender), alpha=0.4, adjust = .25, show.legend=T)
-  # p <- p + scale_x_discrete("Time", breaks=seq(1,length(labs), by=1), labels=labs)
-  p <- p + scale_y_continuous("Number of posts")
-  p <- p + scale_x_date(date_breaks="1 month", date_labels="%B")
-  # p <- p + scale_x_date(breaks = "1 month", minor_breaks = "1 week", date_labels = "%B")
-  p <- p +cleanTheme() + 
-    theme(axis.text.x = element_text(angle = 90, hjust=1),
-        panel.grid.major.x = element_line(color="grey80", size = 0.5, linetype = "dotted"),
-        axis.title.x=element_blank(),
-        legend.position="bottom"
-    )
+  n<-length(levels(allData$sender))
+  cols = gg_color_hue(n)
+  
+  months <- c("January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December")
+  
+  # p <- ggplot(data)
+  
+  p <- ggplot(data, aes(as.Date(date), fill=sender))
+  p <- p + geom_area(aes(group = sender, colour = sender), stat='bin',position="stack",binwidth=7, alpha = 0.5)
+  
+  if(!is.na(user)){
+    p <- p + scale_y_continuous("Number of posts", limits=c(0, maxPosts))
+  }
+  else{
+    p <- p + scale_y_continuous("Number of posts")
+  }
+  # p <- p + scale_y_continuous("Number of posts", limits=c(0, maxPosts))
+  # p <- p + scale_x_continuous("Date", breaks=seq(0,12, by=1), labels=levels(allData$month))
+  p <- p + scale_x_date(date_breaks="1 month", date_labels="%B", expand=c(0,0))
+  p <- p + cleanTheme() + 
+    theme(axis.text.x = element_text(angle = 90, hjust=1,vjust = 0.5),
+          panel.grid.major.y = element_line(color="grey80", size = 0.5, linetype = "dotted"),
+          axis.title.x=element_blank(),
+          legend.position="bottom"
+          )
+
+  # p <- p + scale_fill_manual(values=cols)  
   p
+  
+  
+  
+  # p <- p + geom_area(aes(month, (..count..), fill = sender), stat='bin',alpha=0.6)
+  # # p <- p + scale_x_discrete(breaks=seq(1,length(labs), by=4), labels=months)
+  # 
+  # p <- p + scale_y_continuous("Number of posts", limits=c(0, maxPosts))
+  # # p <- p + scale_x_date(date_breaks="1 month", date_labels="%B")
+  # # ]]p <- p + scale_x_date(breaks = "1 month", minor_breaks = "1 week", date_labels = "%B")
+  # p <- p + cleanTheme() + 
+  #   theme(axis.text.x = element_text(angle = 90, hjust=1),
+  #       panel.grid.major.y = element_line(color="grey80", size = 0.5, linetype = "dotted"),
+  #       axis.title.x=element_blank(),
+  #       legend.position="bottom"
+  #   )
+  # # p <- p + scale_fill_manual(values=cols)  
+  # p
+  
 }
 
 shinyServer(function(input, output, session) {

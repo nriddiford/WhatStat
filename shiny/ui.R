@@ -64,9 +64,9 @@ shinyUI(fluidPage(
                mainPanel(
                  
                  h3("Welcome to WhatStat - an online tool to visualise your WhatsApp chats"),
-                 p("To start, you need to export your WhatsApp chat log and upload it (follow link in 'click Here!' to see further details"),
+                 p("To start, you need to export your WhatsApp chat log and upload it (follow link in 'click Here!' to see further details)"),
                  p("Once the file is uploaded, the first 25 lines of your chat will be displayed below!"),
-                 p("If you're uploading a .zip file and it doesn't word, try unzipping the file first and try again!"),
+                 p("If you're uploading a .zip file and it doesn't work, try unzipping the file first and try again!"),
                  tableOutput('contents')
                )
              )
@@ -141,7 +141,6 @@ shinyUI(fluidPage(
                )
              )
     )
-    
     
     
   )
