@@ -27,6 +27,7 @@ suppressMessages(library(lubridate))
 suppressMessages(library(wordcloud))
 library(scales)
 suppressMessages(library(plotly))
+library(stringi)
 
 
 cleanTheme <- function(base_size = 12){
@@ -88,10 +89,23 @@ parseR <- function(in_file='data/testChat.txt',drop="44", user=NA){
   joinedData <- as.data.frame(joinedData,row.names = NULL, optional = FALSE )
   colnames(joinedData)<-'V1'
   
-  sepData<-suppressWarnings(separate(joinedData, V1, c("datetime", "sender", "message"), sep = ": ", extra = "merge"))
+  phonetype = 'iPhone'
+  if(str_split(head(joinedData$V1,1), " ",simplify = TRUE)[,3] == "-"){
+    phonetype = 'android'
+  }
   
+  if(phonetype == 'android'){
+    sepData<-suppressWarnings(separate(joinedData, V1, c("datetime", "message"), sep = ": ", extra = "merge"))
+    sepData<-suppressWarnings(separate(sepData, datetime, c("datetime", "sender"), sep = "- ", extra = "merge"))
+  } else {
+    sepData<-suppressWarnings(separate(joinedData, V1, c("datetime", "sender", "message"), sep = ": ", extra = "merge"))
+  }
+  
+  sepData$message<- stringi::stri_trans_general(sepData$message, "latin-ascii")
+
   sepData$message <- trimws(sepData$message)
   sepData$message<-gsub("/", " ", sepData$message)
+  
   
   sepData$sender<-factor(sepData$sender)
   
@@ -108,7 +122,11 @@ parseR <- function(in_file='data/testChat.txt',drop="44", user=NA){
   
   user <- ifelse(data$user, user, 'NA')
     
-  data$datetime<-dmy_hms(data$datetime)
+  if(phonetype == 'android'){
+    data$datetime<-dmy_hm(data$datetime)
+  } else {
+    data$datetime<-dmy_hms(data$datetime)
+  }
   
   cleanData<-separate(data, datetime, c("date", "time"), sep = " ", remove =TRUE)
   # cleanData$date<-dmy(cleanData$date)
@@ -173,7 +191,7 @@ wordFreq <- function(file_in='data/testChat.txt', wordlength=3){
     tm_map(removeNumbers) %>%
     tm_map(content_transformer(tolower))  %>%
     tm_map(removeWords, stopwords("english")) %>%
-    tm_map(removeWords, c("omitted", "image", 'video')) %>%
+    tm_map(removeWords, c("omitted", "image", 'video', 'media')) %>%
     tm_map(stripWhitespace)
   
   # dataframe of terms
@@ -192,7 +210,10 @@ wordFreq <- function(file_in='data/testChat.txt', wordlength=3){
   if(max(d$freq) <= 10){
     division = 2
   }
-  else if(max(d$freq) > 10 & max(d$freq) < 100){
+  else if(max(d$freq) > 10 & max(d$freq) < 25){
+    division = 5
+  }
+  else if(max(d$freq) > 25 & max(d$freq) < 100){
     division = 10
   }
   else{
@@ -232,7 +253,7 @@ chatCloud <- function(file_in='data/testChat.txt',user=NA,wordlength=3){
     tm_map(removeNumbers) %>%
     tm_map(content_transformer(tolower))  %>%
     tm_map(removeWords, stopwords("english")) %>%
-    tm_map(removeWords, c("omitted", "image", 'video')) %>%
+    tm_map(removeWords, c("omitted", "image", 'video', 'media')) %>%
     tm_map(stripWhitespace)
   
   # dataframe of terms
@@ -253,7 +274,7 @@ chatCloud <- function(file_in='data/testChat.txt',user=NA,wordlength=3){
 }
 
 
-senderTime <- function (file_in='data/waChat.txt', user=NA) {
+senderTime <- function (file_in='data/testChat.txt', user=NA) {
   
   if(user=='All'){
     user=NA
@@ -290,7 +311,7 @@ senderTime <- function (file_in='data/waChat.txt', user=NA) {
   p
 }
 
-senderDate <- function(file_in='data/DoolsWA.txt',user=NA,filtYear=NA){
+senderDate <- function(file_in='data/testChat.txt',user=NA,filtYear=NA){
   if(user=='All'){
     user=NA
   }
@@ -339,22 +360,24 @@ senderDate <- function(file_in='data/DoolsWA.txt',user=NA,filtYear=NA){
 }
 
 shinyServer(function(input, output, session) {
-  
+    # observe({
+    # 
+    #   updateSelectInput(session, inputId = 'phoneClass', label = 'Phone Type',
+    #                     choices = c("iPhone", "Android"), selected = 'NA')
+    #   df = data()
+    # })
+
   data <- reactive({ 
     req(input$file1)
     
     inFile <- input$file1 
     
+    # df <- parseR(in_file=inFile$datapath, phonetype = input$phoneClass )
     df <- parseR(in_file=inFile$datapath)
     
     return(df)
   })
   
-  observe({
-    df = data()
-    updateSelectInput(session, inputId = 'sender', label = 'Sender',
-                      choices = levels(df$sender), selected = 'NA')
-  })
   # Main page
   output$contents <- renderTable({
     head(data(), 25)
@@ -416,5 +439,6 @@ shinyServer(function(input, output, session) {
   output$datePlot <-renderPlot({
     senderDate(file_in=input$file1$datapath,user=input$Duser,filtYear=input$Dyear)
   })
-    
+  session$onSessionEnded(stopApp)
+
 })

@@ -48,11 +48,11 @@ shinyUI(fluidPage(
              titlePanel("Upload your WhatsApp chat log"),
              sidebarLayout(
                sidebarPanel(
+                 # selectInput('phoneClass', 'Phone Type', ""),
                  fileInput('file1', 'Select your WhatsApp chat log',
                            accept=c(".txt", ".zip")
                            ),
-                 
-                 
+                
                  
                  tags$div(class="header", checked=NA,
                           tags$p("To see instructions of how to export your WhatsApp chat log"),
