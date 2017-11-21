@@ -24,4 +24,8 @@ Follow the steps outlined on the [WhatsApp FAQ page](https://faq.whatsapp.com/en
 
 ## How to install from GitHub
 
+* Coming soon...
+
 ## How to run in Shiny
+
+[Click here](https://whatstat.shinyapps.io/shiny/) to run the shiny web app.
