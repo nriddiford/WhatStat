@@ -25,9 +25,8 @@ suppressMessages(library(stringr))
 suppressMessages(library(VennDiagram))
 suppressMessages(library(lubridate))
 suppressMessages(library(wordcloud))
-library(scales)
-suppressMessages(library(plotly))
-library(stringi)
+suppressMessages(library(scales))
+suppressMessages(library(stringi))
 
 
 cleanTheme <- function(base_size = 12){
@@ -329,11 +328,19 @@ senderDate <- function(file_in='data/testChat.txt',user=NA,filtYear=NA){
   allData$month<-month(allData$date,label = TRUE,abbr = TRUE)
 
   maxPosts<-max(table(week(allData$date),allData$year))
-  
   # labs=levels(allData$month)
   
   n<-length(levels(allData$sender))
   cols = gg_color_hue(n)
+  
+  for(i in seq(from=1, to=n, by=1)){
+    cat(i, levels(allData$sender)[i], "\n")
+    # allData$colours<-
+  }
+  
+  # allData$colour <-
+
+  
   
   months <- c("January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December")
   

@@ -55,7 +55,7 @@ shinyUI(fluidPage(
                 
                  
                  tags$div(class="header", checked=NA,
-                          tags$p("To see instructions of how to export your WhatsApp chat log"),
+                          tags$p("To see instructions on how to export your WhatsApp chat log"),
                           tags$a(href="https://github.com/nriddiford/WhatStat/blob/master/README.md", "Click Here!")
                  ),
                  tags$br()
@@ -64,9 +64,9 @@ shinyUI(fluidPage(
                mainPanel(
                  
                  h3("Welcome to WhatStat - an online tool to visualise your WhatsApp chats"),
-                 p("To start, you need to export your WhatsApp chat log and upload it (follow link in 'click Here!' to see further details)"),
-                 p("Once the file is uploaded, the first 25 lines of your chat will be displayed below!"),
-                 p("If you're uploading a .zip file and it doesn't work, try unzipping the file first and try again!"),
+                 p("To start, you need to export your WhatsApp chat log and upload it (follow link in 'Click Here!' to see further details)"),
+                 p("Once the file is uploaded, click on the tabs above to see different analyses of your chat data!"),
+                 p("If you're uploading a .zip file and it doesn't work, try unzipping the file first and try again"),
                  tableOutput('contents')
                )
              )

@@ -1,2 +1,4 @@
 data/*
 !data/waChat.txt
+.Rproj.user
+.gitignore
