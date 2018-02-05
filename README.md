@@ -1,4 +1,4 @@
-[![WhatStat](https://img.shields.io/badge/WhatStat-launch-brightgreen.svg)](https://whatstat.shinyapps.io/shiny/)
+[![WhatStat](https://img.shields.io/badge/launch-WhatStat-brightgreen.svg)](https://whatstat.shinyapps.io/shiny/)
 
 # WhatStat
 
