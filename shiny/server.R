@@ -12,27 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# library(shiny)
-# library(tidyverse)
-# librar
-#
-# Packages <- c("ggplot2", "dplyr", "tools", "RColorBrewer", "tm",
-#               "SnowballC", "reshape", "stringr", "VennDiagram",
-#               "lubridate", "wordcloud", "scales", "stringi")
-#
-# new.packages <- Packages[!(Packages %in% installed.packages()[,"Package"])]
-# if(length(new.packages)){
-#   install.packages(new.packages)
-# }
-#
-# suppressMessages(
-#   suppressWarnings(
-#   lapply(Packages, library, character.only = TRUE)
-#   )
-# )
-
+options(warn=-1)
 library(shiny)
-suppressMessages(library(tidyverse))
+suppressMessages(library(ggplot2))
+suppressMessages(library(dplyr))
 suppressMessages(library(tools))
 suppressMessages(library(RColorBrewer))
 suppressMessages(library(tm))
