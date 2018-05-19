@@ -2,6 +2,9 @@ data/*
 !data/waChat.txt
 .Rproj.user
 .gitignore
+.Rbuildignore
 shiny/.Rhistory
+shiny/.Rproj.user
+shiny/shiny.Rproj
 .Rhistory
 .RData
