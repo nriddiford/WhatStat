@@ -4,7 +4,7 @@ library(ggplot2)
 library(forcats)
 
 
-plotSentiments <- function(file_in='data/DoolsWA.txt', wordlength=3, plotly=F){
+plotSentiments <- function(file_in='data/WhatsApp Chat - The Doolies.zip', wordlength=3, plotly=F){
   
   data <- parseR(in_file=file_in)
   
@@ -28,7 +28,7 @@ plotSentiments <- function(file_in='data/DoolsWA.txt', wordlength=3, plotly=F){
     
   sentimentedTokens <- filtToks %>%
     group_by(sender) %>% 
-    inner_join(get_sentiments("loughran")) %>% # pull out only sentiment words
+    inner_join(get_sentiments("nrc")) %>% # pull out only sentiment words
     count(sentiment, sort =T) %>% 
     ungroup()
   
@@ -49,7 +49,7 @@ plotSentiments <- function(file_in='data/DoolsWA.txt', wordlength=3, plotly=F){
   
   if(!plotly){
     p <- ggplot(senByMonth)
-    p <- p + geom_bar(aes(fct_reorder(sender, -abs(count)), perc, fill = sentiment), stat = "identity")
+    p <- p + geom_bar(aes(fct_reorder(sender, perc), perc, fill = sentiment), stat = "identity")
     p <- p + guides(fill = FALSE)
     p <- p + cleanTheme() +
       theme(
