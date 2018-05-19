@@ -40,8 +40,6 @@ shinyUI(fluidPage(
   
   # tabsetPanel or navlistPanel ?
 
-  
-  
   tabsetPanel(
     # Tab 1
     tabPanel("Upload File",
@@ -53,7 +51,6 @@ shinyUI(fluidPage(
                            accept=c(".txt", ".zip")
                            ),
                 
-                 
                  tags$div(class="header", checked=NA,
                           tags$p("To see instructions on how to export your WhatsApp chat log"),
                           tags$a(href="https://github.com/nriddiford/WhatStat/blob/master/README.md", "Click Here!")
