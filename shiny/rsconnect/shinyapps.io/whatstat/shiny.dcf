@@ -5,8 +5,9 @@ account: whatstat
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 235731
-bundleId: 1088370
+bundleId: 1381973
 url: https://whatstat.shinyapps.io/shiny/
-when: 1511286815.84756
+when: 1526720535.2899
 asMultiple: FALSE
 asStatic: FALSE
+ignoredFiles: _chat.txt
