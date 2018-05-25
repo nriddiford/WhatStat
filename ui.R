@@ -59,12 +59,11 @@ shinyUI(fluidPage(theme=shinytheme('flatly'),
                  
                ),
                mainPanel(
-                 
                  h3("Welcome to WhatStat - an online tool to visualise your WhatsApp chats"),
                  p("To start, you need to export your WhatsApp chat log and upload it (follow link in 'Click Here!' to see further details)"),
                  p("Once the file is uploaded, click on the tabs above to see different analyses of your chat data!"),
                  p("If you're uploading a .zip file and it doesn't work, try unzipping the file first and try again"),
-                 dataTableOutput('contents')
+                 renderDataTable('contents')
                )
              )
     ),

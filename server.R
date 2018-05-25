@@ -18,23 +18,22 @@ source("R/whatStat.R")
 
 shinyServer(function(input, output, session) {
    
-  output$contents <- renderTable({
-    
+  observe({
     inFile <- input$file1
     
     if (is.null(inFile))
       return(NULL)
     
-    d <- parseR(inFile$datapath)
-    
-    output$contents <- renderDataTable({
-      d
-    })
+  d <- parseR(inFile$datapath)
+  
+  output$contents <- DT::renderDataTable({
+    renderDataTable(d)
+  })
+
   
   # tabPanel 1 - Number of messages
   output$postCount <-renderPlot({
     senderPosts(d=d)
-
   })
 
   # tabPanel 2 - Top words
@@ -100,7 +99,5 @@ shinyServer(function(input, output, session) {
   output$sentiments <-renderPlot({
     chatSentiments(d = d, top_sender = input$top_sender, method = input$method1)
   })
-  
-  
-  })
+})
 })

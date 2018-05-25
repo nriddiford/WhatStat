@@ -1,10 +1,10 @@
-[![WhatStat](https://img.shields.io/badge/launch-WhatStat-brightgreen.svg)](https://whatstat.shinyapps.io/shiny/)
+[![WhatStat](https://img.shields.io/badge/launch-WhatStat-brightgreen.svg)](https://whatstat.shinyapps.io/WhatStat/)
 
 # WhatStat
 
 A tool to parse and visualise your WhatsApp group chats.
 
-[Click here](https://whatstat.shinyapps.io/shiny/) to run the shiny web app.
+[Click here](https://whatstat.shinyapps.io/WhatStat/) to run the shiny web app.
 
 Please [e-mail](mailto:nickriddiford@gmail.com) me if you are experiencing problems with WhatStat.
 
@@ -32,4 +32,4 @@ Follow the steps outlined on the [WhatsApp FAQ page](https://faq.whatsapp.com/en
 
 ## How to run in Shiny
 
-[Click here](https://whatstat.shinyapps.io/shiny/) to run the shiny web app.
+[Click here](https://whatstat.shinyapps.io/WhatStat/) to run the shiny web app.
