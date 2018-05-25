@@ -13,9 +13,9 @@
 # limitations under the License.
 
 library(shiny)
+library(shinythemes)
 
-
-shinyUI(fluidPage(
+shinyUI(fluidPage(theme=shinytheme('flatly'),
   
   tags$head(HTML(
     "<script>
@@ -64,7 +64,7 @@ shinyUI(fluidPage(
                  p("To start, you need to export your WhatsApp chat log and upload it (follow link in 'Click Here!' to see further details)"),
                  p("Once the file is uploaded, click on the tabs above to see different analyses of your chat data!"),
                  p("If you're uploading a .zip file and it doesn't work, try unzipping the file first and try again"),
-                 tableOutput('contents')
+                 dataTableOutput('contents')
                )
              )
     ),
@@ -125,7 +125,7 @@ shinyUI(fluidPage(
              )
     ),
     
-    # Tab 4
+    # Tab 6
     tabPanel("Date",
              pageWithSidebar(
                headerPanel('Chat history'),
@@ -137,6 +137,22 @@ shinyUI(fluidPage(
                  plotOutput('datePlot')
                )
              )
+    ),
+    
+    # Tab 3
+    tabPanel("Sentiments",
+                pageWithSidebar(
+                  headerPanel('Sentiment Analysis of emails'),
+                    sidebarPanel(
+                      selectInput('method1', 'Method', ""),
+                      sliderInput("top_sender", "Top n senders",
+                                  min = 1, max = 10, "")
+                    ),
+                    mainPanel(
+                      plotOutput('sentiments')
+                    )
+                )
+    
     )
     
     

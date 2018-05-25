@@ -1,13 +1,12 @@
 name: shiny
-title:
+title: shiny
 username:
 account: whatstat
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 235731
-bundleId: 1381981
+bundleId: 1391641
 url: https://whatstat.shinyapps.io/shiny/
-when: 1526722052.6042
+when: 1527187829.59621
 asMultiple: FALSE
 asStatic: FALSE
-ignoredFiles: _chat.txt
