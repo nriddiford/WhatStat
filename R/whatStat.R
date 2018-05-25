@@ -1,20 +1,17 @@
-
 suppressMessages(library(ggplot2))
 suppressMessages(library(tidyr))
+suppressMessages(library(plyr))
 suppressMessages(library(dplyr))
 suppressMessages(library(tools))
-suppressMessages(library(RColorBrewer))
 suppressMessages(library(tm))
 suppressMessages(library(SnowballC))
-suppressMessages(library(reshape))
 suppressMessages(library(stringr))
-suppressMessages(library(VennDiagram))
 suppressMessages(library(lubridate))
 suppressMessages(library(wordcloud))
-suppressMessages(library(scales))
 suppressMessages(library(stringi))
-library(tidytext)
-library(forcats)
+suppressMessages(library(tidytext))
+suppressMessages(library(forcats))
+suppressMessages(library(DT))
 
 #' parseR
 #'
@@ -75,10 +72,10 @@ parseR <- function(in_file='data/testChat.txt',drop="44", user=NA){
   }
   
   if(phonetype == 'android'){
-    sepData<-suppressWarnings(separate(joinedData, V1, c("datetime", "message"), sep = ": ", extra = "merge"))
-    sepData<-suppressWarnings(separate(sepData, datetime, c("datetime", "sender"), sep = "- ", extra = "merge"))
+    sepData<-suppressWarnings(tidyr::separate(joinedData, V1, c("datetime", "message"), sep = ": ", extra = "merge"))
+    sepData<-suppressWarnings(tidyr::separate(sepData, datetime, c("datetime", "sender"), sep = "- ", extra = "merge"))
   } else {
-    sepData<-suppressWarnings(separate(joinedData, V1, c("datetime", "sender", "message"), sep = ": ", extra = "merge"))
+    sepData<-suppressWarnings(tidyr::separate(joinedData, V1, c("datetime", "sender", "message"), sep = ": ", extra = "merge"))
   }
   
   sepData$message<- stringi::stri_trans_general(sepData$message, "latin-ascii")
@@ -96,19 +93,14 @@ parseR <- function(in_file='data/testChat.txt',drop="44", user=NA){
     mutate(sender = as.factor(sender)) %>%
     droplevels()
   
-  ## ?
-  #user <- ifelse(filtData$user, user, 'NA')
-  
   if(phonetype == 'android'){
     suppressWarnings(filtData$datetime<-dmy_hm(filtData$datetime))
   } else {
     suppressWarnings(filtData$datetime<-dmy_hms(filtData$datetime))
   }
   
-  cleanData<-separate(filtData, datetime, c("date", "time"), sep = " ", remove =TRUE)
-  # cleanData$date<-dmy(cleanData$date)
-  # cleanData$time<-hms(cleanData$time)
-  
+  cleanData<-tidyr::separate(filtData, datetime, c("date", "time"), sep = " ", remove =TRUE)
+ 
   return(cleanData)
 }
 
@@ -122,7 +114,7 @@ parseR <- function(in_file='data/testChat.txt',drop="44", user=NA){
 #' @import tm, SnowballC, dplyr
 #' @export
 #' 
-makeCorpus <- function(d, wordlength=4){
+makeCorpus <- function(d){
   
   excludedWords <- c("omitted", "image", 'video', 'media')
   
@@ -141,11 +133,7 @@ makeCorpus <- function(d, wordlength=4){
   m <- as.matrix(dtm)
   v <- sort(rowSums(m),decreasing=TRUE)
   all <- data.frame(word = names(v),freq=v)
-  
-  all <- all %>%
-    filter(nchar(as.character(word))>=wordlength) %>%
-    droplevels()
-  
+
   return(all)
   
 }
@@ -216,41 +204,31 @@ senderPosts <- function(file_in='data/testChat.txt', d=NA){
          data <- parseR(in_file=file_in),
          data <- d)
   
+  postCount <- data %>% 
+    group_by(sender) %>% 
+    tally() %>% 
+    arrange(-n)
   
-  postCount<-as.data.frame(cbind(table(data$sender)))
-  postCount <- data.frame(names = row.names(postCount), postCount)
-  rownames(postCount)<-NULL
-  colnames(postCount)<-c("name", "posts")
+  division <- plyr::round_any(ceiling(max(postCount$n)/10), 10, f = ceiling)
   
-  postCount <- transform(postCount, name = reorder(name, posts))
-  
-  division <- ceiling(max(postCount$posts)/10)
-  
-  if(max(postCount$posts) <= 100){
-    division = 20
-  }
-  else if(max(postCount$posts) > 100 & max(postCount$posts) < 200){
-    division = 50
-  }
-  else if(max(postCount$posts) > 200 & max(postCount$posts) < 500){
-    division = 100
-  }
-  else if(max(postCount$posts) > 500 & max(postCount$posts) < 1000){
-    division = 200
-  }
-  else{
-    division = 250
+  if(max(postCount$n)>=100){
+    division <- plyr::round_any(ceiling(max(postCount$n)/10), 50, f = ceiling)
   }
   
-  # Plot bar
+  if(max(postCount$n)>=500){
+    division <- plyr::round_any(ceiling(max(postCount$n)/10), 100, f = ceiling)
+  }
+ 
+  
   p <- ggplot(postCount)
-  p <- p + geom_bar(aes(name, posts, fill = "deepskyblue1"),stat='identity')
-  p <- p + scale_y_continuous("Number of posts", breaks=seq(0,max(postCount$posts),by=division),expand = c(0.01,0.05))
+  p <- p + geom_bar(aes(fct_reorder(sender, n), n, fill = "deepskyblue1"),stat='identity')
+  p <- p + scale_y_continuous("Number of posts", breaks=seq(0,max(postCount$n),by=division),expand = c(0.01,0.05))
   p <- p + cleanTheme() +
     theme(
       axis.title.x=element_blank(),
       axis.title.y=element_blank(),
-      axis.text = element_text(size=20),
+      axis.text.y = element_text(size=20),
+      axis.text.x = element_text(size=15),
       panel.grid.major.x = element_line(color="grey80", size = 0.5, linetype = "dotted")
     )
   p <- p + scale_fill_identity()
@@ -261,30 +239,22 @@ senderPosts <- function(file_in='data/testChat.txt', d=NA){
 }
 
 
-wordFreq <- function(file_in='data/testChat.txt', wordlength=3, d=NA){
+wordFreq <- function(wordlength=3, corpus){
   
-  ifelse(is.na(d),
-         data <- parseR(in_file=file_in),
-         data <- d)
-  
-  all <- makeCorpus(d=data, wordlength = wordlength)
-  
+  all <- corpus %>%
+  filter(nchar(as.character(word))>=wordlength)
+    
   d <- all[1:15,]
   d  <- transform(d , word = reorder(word, freq))
   
-  division <- ceiling(max(d$freq)/10)
+  division <- plyr::round_any(ceiling(max(d$freq)/10), 10, f = ceiling)
   
-  if(max(d$freq) <= 10){
-    division = 2
+  if(max(d$freq)>=100){
+    division <- plyr::round_any(ceiling(max(d$freq)/10), 50, f = ceiling)
   }
-  else if(max(d$freq) > 10 & max(d$freq) < 25){
-    division = 5
-  }
-  else if(max(d$freq) > 25 & max(d$freq) < 100){
-    division = 10
-  }
-  else{
-    division = 20
+  
+  if(max(d$freq)>=500){
+    division <- plyr::round_any(ceiling(max(d$freq)/10), 100, f = ceiling)
   }
   
   p <- ggplot(d)
@@ -296,7 +266,8 @@ wordFreq <- function(file_in='data/testChat.txt', wordlength=3, d=NA){
     theme(
       axis.title.x=element_blank(),
       axis.title.y=element_blank(),
-      axis.text = element_text(size=20),
+      axis.text.y = element_text(size=20),
+      axis.text.x = element_text(size=15),
       panel.grid.major.x = element_line(color="grey80", size = 0.5, linetype = "dotted")
       
     )
@@ -306,27 +277,28 @@ wordFreq <- function(file_in='data/testChat.txt', wordlength=3, d=NA){
 }
 
 
-chatCloud <- function(file_in='data/testChat.txt',user=NA,wordlength=3, d=NA){
-  
-  ifelse(is.na(d),
-         data <- parseR(in_file=file_in, user=user),
-         data <- d)
+chatCloud <- function(d, user=NULL, wordlength=3){
   
   if(user=='All'){
-    user=NA
+    user=NULL
   } 
   
-  if(!is.na(user)){
-    if(user %in% levels(data$sender)) {
-      data <- filter(data, sender==user)
-    }
+  if(!is.null(user)){
+    d <- filter(d, sender==user)
   }
   
-  all <- makeCorpus(d=data, wordlength = wordlength)
+  all <- makeCorpus(d)
   
+  all <- all %>%
+    filter(nchar(as.character(word))>=wordlength)
+  
+  options(warn=-1)
   wordcloud(words = all$word, freq = all$freq, min.freq = 1,
-            max.words=80, random.order=FALSE, rot.per=0.35,
-            colors=brewer.pal(8, "Dark2"),scale=c(4,.5))
+            max.words=50, random.order=FALSE,
+            rot.per=0.35,
+            colors=brewer.pal(6, "Paired")
+           )
+  options(warn=0)
 }
 
 
