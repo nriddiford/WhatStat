@@ -12,24 +12,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# options(warn=-1)
 library(shiny)
 source("R/whatStat.R")
 
 shinyServer(function(input, output, session) {
    
   observe({
-    inFile <- input$file1
+    inFile <- input$file
     
     if (is.null(inFile))
       return(NULL)
     
   d <- parseR(inFile$datapath)
   
-  output$contents <- DT::renderDataTable({
-    renderDataTable(d)
-  })
-
+  output$contents <- renderDT(d)
   
   # tabPanel 1 - Number of messages
   output$postCount <-renderPlot({
@@ -42,39 +38,37 @@ shinyServer(function(input, output, session) {
     updateSelectInput(session, inputId = 'wlength', label = 'Minimum word length',
                       choices = c(3:5), selected = 3)
   })
+  
+  allWords <- makeCorpus(d=d)
 
   output$wordCount <-renderPlot({
-    wordFreq(d = d, wordlength=input$wlength)
-
+    wordFreq(corpus=allWords, wordlength=input$wlength)
   })
 
   # tabPanel 3 - Word cloud
   observe({
-    # d = data()
     updateSelectInput(session, inputId = 'user', label = 'Sender',
-                      choices = c("All", levels(d$sender)), selected = 'NA')
+                      choices = c("All", levels(d$sender)), selected = 'All')
     updateSelectInput(session, inputId = 'cwlength', label = 'Minimum word length',
                       choices = c(3:5), selected = 3)
   })
-
+  
   output$wCloud <-renderPlot({
-    chatCloud(d = d ,user=input$user, wordlength=input$cwlength)
-
+    chatCloud(d=d, wordlength=input$cwlength, user=input$user)
   })
 
+  # tabPanel 4 - Messages throughout the day
   observe({
-    # d = data()
     updateSelectInput(session, inputId = 'Tuser', label = 'Sender',
                       choices = c("All", levels(d$sender)), selected = 'NA')
   })
 
-  # tabPanel 4 - Messages throughout the day
   output$timePlot <-renderPlot({
     senderTime(d = d, user=input$Tuser)
   })
 
+  # tabPanel 5 - Messages throughout years
   observe({
-    # d = data()
     updateSelectInput(session, inputId = 'Duser', label = 'Sender',
                       choices = c("All", levels(d$sender)), selected = 'NA')
 
@@ -82,12 +76,10 @@ shinyServer(function(input, output, session) {
                       choices = levels(factor(year(d$date))))
   })
 
-  # tabPanel 5 - Messages throughout years
   output$datePlot <-renderPlot({
     senderDate(d = d, user=input$Duser,filtYear=input$Dyear)
   })
-  # session$onSessionEnded(stopApp)
-  
+
   # tabPanel 5 - Sentiments
   observe({
     updateSelectInput(session, inputId = 'method1', label = 'Method',
@@ -100,4 +92,5 @@ shinyServer(function(input, output, session) {
     chatSentiments(d = d, top_sender = input$top_sender, method = input$method1)
   })
 })
+
 })

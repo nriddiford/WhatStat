@@ -37,33 +37,24 @@ shinyUI(fluidPage(theme=shinytheme('flatly'),
   )),
   
   navbarPage("WhatStat"),
-  
-  # tabsetPanel or navlistPanel ?
-
-  tabsetPanel(
+    tabsetPanel(
     # Tab 1
     tabPanel("Upload File",
              titlePanel("Upload your WhatsApp chat log"),
              sidebarLayout(
                sidebarPanel(
-                 # selectInput('phoneClass', 'Phone Type', ""),
-                 fileInput('file1', 'Select your WhatsApp chat log',
-                           accept=c(".txt", ".zip")
-                           ),
-                
+                 fileInput('file', 'Select your WhatsApp chat log'),
                  tags$div(class="header", checked=NA,
                           tags$p("To see instructions on how to export your WhatsApp chat log"),
                           tags$a(href="https://github.com/nriddiford/WhatStat/blob/master/README.md", "Click Here!")
-                 ),
-                 tags$br()
-                 
+                 )
                ),
                mainPanel(
                  h3("Welcome to WhatStat - an online tool to visualise your WhatsApp chats"),
                  p("To start, you need to export your WhatsApp chat log and upload it (follow link in 'Click Here!' to see further details)"),
                  p("Once the file is uploaded, click on the tabs above to see different analyses of your chat data!"),
                  p("If you're uploading a .zip file and it doesn't work, try unzipping the file first and try again"),
-                 renderDataTable('contents')
+                 DT::DTOutput('contents')
                )
              )
     ),
@@ -84,11 +75,8 @@ shinyUI(fluidPage(theme=shinytheme('flatly'),
              pageWithSidebar(
                headerPanel('Most common words'),
                sidebarPanel(
-                 
                  sliderInput("wlength", "Minimum word length",
                              min = 2, max = 10, "")
-                 # "Empty inputs" - they will be updated after the data is uploaded
-                 # selectInput('wlength', 'Word length', "")
                ),
                mainPanel(
                  plotOutput('wordCount')
@@ -141,7 +129,7 @@ shinyUI(fluidPage(theme=shinytheme('flatly'),
     # Tab 3
     tabPanel("Sentiments",
                 pageWithSidebar(
-                  headerPanel('Sentiment Analysis of emails'),
+                  headerPanel('Sentiment Analysis of messages'),
                     sidebarPanel(
                       selectInput('method1', 'Method', ""),
                       sliderInput("top_sender", "Top n senders",
