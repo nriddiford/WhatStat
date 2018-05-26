@@ -1,3 +1,19 @@
+# Copyright 2017 Nick Riddiford
+# 
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+# 
+# http://www.apache.org/licenses/LICENSE-2.0
+# 
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+
+
 suppressMessages(library(ggplot2))
 suppressMessages(library(tidyr))
 suppressMessages(library(plyr))
@@ -12,6 +28,8 @@ suppressMessages(library(stringi))
 suppressMessages(library(tidytext))
 suppressMessages(library(forcats))
 suppressMessages(library(DT))
+suppressMessages(library(RJSONIO))
+suppressMessages(library(knitr))
 
 #' parseR
 #'
@@ -22,7 +40,7 @@ suppressMessages(library(DT))
 #' @import stringi, dplyr, stringr, lubridate
 #' @export
 #' 
-parseR <- function(in_file='data/testChat.txt',drop="44", user=NA){
+parseR <- function(in_file, drop="44", user=NA){
   
   if(file_ext(in_file)=='zip'){
     # cat("Zipped file")
@@ -30,7 +48,9 @@ parseR <- function(in_file='data/testChat.txt',drop="44", user=NA){
     # suppressMessages(rawData<-unlist(read_table(in_file)))
     rawData<-scan(unzipped, what="", sep="\n")
     if (file.exists(unzipped)) file.remove(unzipped)
-  } else{
+  } 
+  
+  if(file_ext(in_file)=='txt'){
     rawData<-scan(in_file, what="", sep="\n")
   }
   

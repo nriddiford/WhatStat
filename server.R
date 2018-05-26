@@ -34,7 +34,6 @@ shinyServer(function(input, output, session) {
 
   # tabPanel 2 - Top words
   observe({
-    # d = data()
     updateSelectInput(session, inputId = 'wlength', label = 'Minimum word length',
                       choices = c(3:5), selected = 3)
   })
