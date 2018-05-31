@@ -1,5 +1,5 @@
 [![WhatStat](https://img.shields.io/badge/launch-WhatStat-brightgreen.svg)](https://whatstat.shinyapps.io/WhatStat/)
-[![GitHub license](https://img.shields.io/github/license/mashape/apistatus.svg)](https://github.com/nriddiford/WhatStat/blob/master/LICENSE)
+[![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 
 # WhatStat
 
