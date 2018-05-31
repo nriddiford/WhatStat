@@ -1,4 +1,5 @@
 [![WhatStat](https://img.shields.io/badge/launch-WhatStat-brightgreen.svg)](https://whatstat.shinyapps.io/WhatStat/)
+[![GitHub license](https://img.shields.io/github/license/mashape/apistatus.svg)](https://github.com/nriddiford/WhatStat/blob/master/LICENSE)
 
 # WhatStat
 
@@ -26,9 +27,19 @@ Follow the steps outlined on the [WhatsApp FAQ page](https://faq.whatsapp.com/en
 4. Select "Email chat"
 5. Select "Attach without Media"
 
-## How to install from GitHub
+## Install from GitHub
 
-* Coming soon...
+```
+git clone https://github.com/nriddiford/WhatStat.git
+```
+
+Start an R session, and install package:
+
+```
+library(devtools)
+install_github("nriddiford/WhatStat")
+library(WhatStat)
+```
 
 ## How to run in Shiny
 
