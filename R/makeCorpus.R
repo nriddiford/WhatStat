@@ -4,7 +4,7 @@
 #' @param d A dataframe containing messages created from \code{\link{parseR}}
 #' @param wordlength Minimum word length
 #' @keywords corpus
-#' @import tm, SnowballC, dplyr
+#' @import tm SnowballC dplyr
 #' @export
 makeCorpus <- function(d){
 

@@ -4,7 +4,7 @@
 \alias{senderTime}
 \title{senderTime}
 \usage{
-senderTime(file_in = "data/testChat.txt", user = NA, d = NA)
+senderTime(file_in, user = NA, d = NA)
 }
 \arguments{
 \item{file_in}{WhatsApp chat log (if reading from file)}

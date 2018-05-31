@@ -4,8 +4,7 @@
 \alias{senderDate}
 \title{senderDate}
 \usage{
-senderDate(file_in = "data/testChat.txt", user = NA, filtYear = NA,
-  d = NA)
+senderDate(file_in, user = NA, filtYear = NA, d = NA)
 }
 \arguments{
 \item{file_in}{WhatsApp chat log (if reading from file)}

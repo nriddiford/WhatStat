@@ -6,7 +6,7 @@
 #' @param sender The sender to filter for
 #' @param top_sender The number of senders to show (ranked by number of words)
 #' @param method The sentiment analysis method to use
-#' @import dplyr, tidytext, ggplot2, lubridate
+#' @import dplyr tidytext ggplot2 lubridate
 #' @export
 chatSentiments <- function(file_in='data/testChat.txt', d=NA, sender = NA, top_sender = 5, method='loughran'){
 

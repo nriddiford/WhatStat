@@ -3,7 +3,7 @@
 #' Plot the word frequency in users/groups chat history
 #' @param wordlength Minimum word length
 #' @param corpus dataframe of words returned from \code{\link{makeCorpus}}
-#' @import plyr, dplyr, ggplot2
+#' @import plyr dplyr ggplot2
 #' @export
 wordFreq <- function(wordlength=3, corpus){
 
@@ -49,7 +49,7 @@ wordFreq <- function(wordlength=3, corpus){
 #' @param wordlength Minimum word length
 #' @param d A dataframe containing messages created from \code{\link{parseR}}
 #' @param user The user to filter for
-#' @import dplyr, ggplot2
+#' @import dplyr ggplot2
 #' @export
 chatCloud <- function(d, user=NULL, wordlength=3){
 
@@ -82,9 +82,9 @@ chatCloud <- function(d, user=NULL, wordlength=3){
 #' Plot the numer of posts per sender
 #' @param file_in WhatsApp chat log (if reading from file)
 #' @param d dataframe of chat returned from \code{\link{parseR}}
-#' @import plyr, dplyr, ggplot2
+#' @import plyr dplyr ggplot2
 #' @export
-senderPosts <- function(file_in='data/testChat.txt', d=NA){
+senderPosts <- function(file_in, d=NA){
 
   ifelse(is.na(d),
          data <- parseR(in_file=file_in),
@@ -130,9 +130,9 @@ senderPosts <- function(file_in='data/testChat.txt', d=NA){
 #' @param file_in WhatsApp chat log (if reading from file)
 #' @param d dataframe of chat returned from \code{\link{parseR}}
 #' @param user The user to filter for
-#' @import dplyr, ggplot2, lubridate
+#' @import dplyr ggplot2 lubridate
 #' @export
-senderTime <- function (file_in='data/testChat.txt', user=NA, d=NA) {
+senderTime <- function (file_in, user=NA, d=NA) {
 
   if(user=='All'){
     user=NA
@@ -187,9 +187,9 @@ senderTime <- function (file_in='data/testChat.txt', user=NA, d=NA) {
 #' @param d dataframe of chat returned from \code{\link{parseR}}
 #' @param user The user to filter for
 #' @param filtYear The year to show
-#' @import dplyr, ggplot2, lubridate
+#' @import dplyr ggplot2 lubridate
 #' @export
-senderDate <- function(file_in='data/testChat.txt',user=NA,filtYear=NA, d=NA){
+senderDate <- function(file_in, user=NA, filtYear=NA, d=NA){
 
   if(user == "All") user <- NA
 
