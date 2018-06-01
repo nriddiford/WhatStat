@@ -49,19 +49,16 @@ wordFreq <- function(wordlength=3, corpus){
 #' @param wordlength Minimum word length
 #' @param d A dataframe containing messages created from \code{\link{parseR}}
 #' @param user The user to filter for
-#' @import dplyr ggplot2
+#' @import dplyr ggplot2 wordcloud RColorBrewer
 #' @export
-chatCloud <- function(d, user=NULL, wordlength=3){
+chatCloud <- function(chatdf, user='All', wordlength=3){
+  userFilt <- 1
+  if(user == "All") userFilt <- 0
 
-  if(user=='All'){
-    user=NULL
-  }
+  if(userFilt)
+    chatdf <- filter(chatdf, sender==user)
 
-  if(!is.null(user)){
-    d <- filter(d, sender==user)
-  }
-
-  all <- makeCorpus(d)
+  all <- makeCorpus(chatdf)
 
   all <- all %>%
     filter(nchar(as.character(word))>=wordlength)
@@ -82,15 +79,14 @@ chatCloud <- function(d, user=NULL, wordlength=3){
 #' Plot the numer of posts per sender
 #' @param file_in WhatsApp chat log (if reading from file)
 #' @param d dataframe of chat returned from \code{\link{parseR}}
-#' @import plyr dplyr ggplot2
+#' @import plyr dplyr ggplot2 forcats
 #' @export
-senderPosts <- function(file_in, d=NA){
+senderPosts <- function(file_in=NULL, chatdf=FALSE){
 
-  ifelse(is.na(d),
-         data <- parseR(in_file=file_in),
-         data <- d)
+  if(length(file_in)>0)
+    chatdf <- parseR(in_file=file_in, user=user)
 
-  postCount <- data %>%
+  postCount <- chatdf %>%
     group_by(sender) %>%
     tally() %>%
     arrange(-n)
@@ -132,39 +128,32 @@ senderPosts <- function(file_in, d=NA){
 #' @param user The user to filter for
 #' @import dplyr ggplot2 lubridate
 #' @export
-senderTime <- function (file_in, user=NA, d=NA) {
+senderTime <- function (file_in = NULL, user='All', chatdf=FALSE) {
+  userFilt <- 1
+  yearFilt <- 1
+  if(user == "All") userFilt <- 0
 
-  if(user=='All'){
-    user=NA
-  }
+  if(length(file_in)>0)
+    chatdf <- parseR(in_file=file_in, user=user)
 
-  ifelse(is.na(d),
-         data <- parseR(in_file=file_in, user=user),
-         data <- d)
-
-  allData <- data
+  allData <- chatdf
   allData$time <- hms(allData$time)
   allData$hour<-lubridate::hour(allData$time)
 
   maxPosts<-max(table(allData$hour))
 
-  if(!is.na(user)){
-    if(user %in% levels(data$sender)) {
-      data <- filter(data, sender==user)
-    }
-  }
+  if(userFilt)
+    chatdf <- filter(chatdf, sender==user)
 
-
-  data$time <- hms(data$time)
-  data$hour<-lubridate::hour(data$time)
+  chatdf$time <- hms(chatdf$time)
+  chatdf$hour<-lubridate::hour(chatdf$time)
   labs<-c("12am", "", "2am", "", "4am", "", "6am", "", "8am", "", "10am", "", "12pm", "", "2pm", "", "4pm", "", "6pm", "", "8pm", "", "10pm", "")
 
-  p <- ggplot(data, aes(hour, fill=sender))
+  p <- ggplot(chatdf, aes(hour, fill=sender))
   p <- p + geom_area(aes(group = sender, colour = sender), stat='bin',position="stack",binwidth=1, alpha = 0.5)
-  if(!is.na(user)){
+  if(userFilt){
     p <- p + scale_y_continuous("Number of posts", limits=c(0, maxPosts))
-  }
-  else{
+  } else{
     p <- p + scale_y_continuous("Number of posts")
   }
   p <- p + scale_x_continuous("Time", breaks=seq(0,23, by=1), labels=labs)
@@ -189,45 +178,46 @@ senderTime <- function (file_in, user=NA, d=NA) {
 #' @param filtYear The year to show
 #' @import dplyr ggplot2 lubridate
 #' @export
-senderDate <- function(file_in, user=NA, filtYear=NA, d=NA){
+senderDate <- function(file_in = NULL, user='All', filtYear = 'All', chatdf = FALSE){
+  userFilt <- 1
+  yearFilt <- 1
+  if(user == "All") userFilt <- 0
+  if(filtYear == "All") yearFilt <- 0
 
-  if(user == "All") user <- NA
+  if(length(file_in)>0)
+    chatdf <- parseR(in_file=file_in, user=user)
 
-  ifelse(is.na(d),
-         data <- parseR(in_file=file_in, user=user),
-         data <- d)
-
-  allData <- data
+  allData <- chatdf
   allData$date <- ymd(allData$date)
   allData$year <- year(allData$date)
-  allData$month <- month(allData$date,label = TRUE,abbr = TRUE)
+  allData$month <- month(allData$date, label = TRUE, abbr = TRUE)
 
   maxPosts <- max(table(week(allData$date),allData$year))
 
-  n<-length(levels(allData$sender))
+  n <- length(levels(allData$sender))
   cols <- gg_colour_hue(n)
 
-  if( !is.na(user) ){
-    if(user %in% levels(data$sender)) {
-      data <- filter(data, sender==user)
-    }
+  if(userFilt==1){
+    chatdf <- filter(chatdf, sender==user)
   }
 
-  data$date <- ymd(data$date)
-  data$year<-year(data$date)
-  data <- filter(data, year == filtYear)
+  d$date <- ymd(d$date)
+  d$year <- year(d$date)
 
-  data$month<-month(data$date,label = TRUE,abbr = TRUE)
+  if(yearFilt==1){
+    d <- filter(d, year == filtYear)
+  }
+
+  d$month<-month(d$date, label = TRUE, abbr = TRUE)
 
   months <- c("January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December")
 
-  p <- ggplot(data, aes(as.Date(date), fill=sender))
+  p <- ggplot(d, aes(as.Date(date), fill=sender))
   p <- p + geom_area(aes(group = sender, colour = sender), stat='bin',position="stack",binwidth=14, alpha = 0.5)
 
-  if(!is.na(user)){
+  if(userFilt==1){
     p <- p + scale_y_continuous("Number of posts", limits=c(0, maxPosts))
-  }
-  else{
+  } else{
     p <- p + scale_y_continuous("Number of posts")
   }
   p <- p + scale_x_date(date_breaks="1 month", date_labels="%B", expand=c(0,0))

@@ -6,27 +6,26 @@
 #' @param sender The sender to filter for
 #' @param top_sender The number of senders to show (ranked by number of words)
 #' @param method The sentiment analysis method to use
-#' @import dplyr tidytext ggplot2 lubridate
+#' @import dplyr tidytext ggplot2 lubridate forcats
 #' @export
-chatSentiments <- function(file_in='data/testChat.txt', d=NA, sender = NA, top_sender = 5, method='loughran'){
+chatSentiments <- function(file_in=NULL, chatdf=NULL, sender = NA, top_sender = 5, method='loughran'){
 
-  ifelse(is.na(d),
-         data <- parseR(in_file=file_in),
-         data <- d)
+  if(length(file_in)>0)
+    chatdf <- parseR(in_file=file_in)
 
   if(is.na(sender)) {
     # Get the top 5 recipients
-    topRecips <- data %>%
+    topRecips <- chatdf %>%
       group_by(sender) %>%
       tally() %>%
       top_n(n=top_sender)
 
 
-    filtData <- data %>%
+    filtData <- chatdf %>%
       filter(sender %in% topRecips$sender) %>%
       droplevels()
   } else {
-    filtData <- data %>%
+    filtData <- chatdf %>%
       filter(sender == sender) %>%
       droplevels()
   }

@@ -3,9 +3,9 @@
 #' The main parsing function for extracting a dataframe from WhatsApp chat log
 #' @param in_file Whats App chat log (.txt or .zip)
 #' @param user Select a user
-#' @import stringi dplyr stringr lubridate
+#' @import stringi dplyr stringr lubridate tools
 #' @export
-parseR <- function(in_file, drop="44", user=NA){
+parseR <- function(in_file, drop="44", user=FALSE){
 
   if(file_ext(in_file)=='zip'){
     unzipped <- unzip(in_file)

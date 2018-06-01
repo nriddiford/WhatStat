@@ -4,7 +4,7 @@
 \alias{parseR}
 \title{parseR}
 \usage{
-parseR(in_file, drop = "44", user = NA)
+parseR(in_file, drop = "44", user = FALSE)
 }
 \arguments{
 \item{in_file}{Whats App chat log (.txt or .zip)}

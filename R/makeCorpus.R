@@ -6,7 +6,7 @@
 #' @keywords corpus
 #' @import tm SnowballC dplyr
 #' @export
-makeCorpus <- function(d){
+makeCorpus <- function(chatdf){
 
   excludedWords <- c("omitted", "image", 'video', 'media')
 
