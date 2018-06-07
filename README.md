@@ -41,6 +41,11 @@ install_github("nriddiford/WhatStat")
 library(WhatStat)
 ```
 
+## Run shiny app locally
+```
+LaunchMyApp()
+```
+
 ### Parse your chat log
 ```
 d <- parseR(in_file = 'chatLogs/Dools_chris_chat 3.txt')
