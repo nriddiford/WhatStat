@@ -15,7 +15,8 @@
 library(shiny)
 library(rsconnect)
 library(lubridate)
-source("whatStat.R")
+library(whatStat)
+# source("whatStat.R")
 
 shinyServer(function(input, output, session) {
 
