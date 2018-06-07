@@ -4,7 +4,7 @@
 \alias{senderPosts}
 \title{senderPosts}
 \usage{
-senderPosts(file_in, d = NA)
+senderPosts(file_in = NULL, chatdf = FALSE)
 }
 \arguments{
 \item{file_in}{WhatsApp chat log (if reading from file)}

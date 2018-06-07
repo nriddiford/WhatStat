@@ -4,19 +4,19 @@
 \alias{chatSentiments}
 \title{chatSentiments}
 \usage{
-chatSentiments(file_in = "data/testChat.txt", d = NA, sender = NA,
+chatSentiments(file_in = NULL, chatdf = NULL, sender = NA,
   top_sender = 5, method = "loughran")
 }
 \arguments{
 \item{file_in}{WhatsApp chat log (if reading from file)}
-
-\item{d}{dataframe of chat returned from \code{\link{parseR}}}
 
 \item{sender}{The sender to filter for}
 
 \item{top_sender}{The number of senders to show (ranked by number of words)}
 
 \item{method}{The sentiment analysis method to use}
+
+\item{d}{dataframe of chat returned from \code{\link{parseR}}}
 }
 \description{
 Perform a per-user sentiment analysis using

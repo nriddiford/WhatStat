@@ -4,7 +4,7 @@
 \alias{makeCorpus}
 \title{makeCorpus}
 \usage{
-makeCorpus(d)
+makeCorpus(chatdf)
 }
 \arguments{
 \item{d}{A dataframe containing messages created from \code{\link{parseR}}}

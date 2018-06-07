@@ -1,0 +1,16 @@
+#' Launch App in the default browser
+#'
+#' @author Mathieu Delsaut, \email{mathieu.delsaut@@univ-reunion.fr}
+#'
+#' @examples
+#' if (interactive()) {
+#'   LaunchMyApp()
+#' }
+#' @export
+LaunchMyApp <- function() {
+  appDir <- system.file("app", package = "WhatStat") # looking for inst/app
+  if (appDir == "") {
+    stop("Could not find example directory. Try re-installing `mypackage`.", call. = FALSE)
+  }
+  runApp(appDir, display.mode = "normal")
+}

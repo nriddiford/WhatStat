@@ -3,7 +3,7 @@
 #' The main parsing function for extracting a dataframe from WhatsApp chat log
 #' @param in_file Whats App chat log (.txt or .zip)
 #' @param user Select a user
-#' @import stringi dplyr stringr lubridate tools
+#' @import stringi lubridate dplyr stringr tools
 #' @export
 parseR <- function(in_file, drop="44", user=FALSE){
 

@@ -4,14 +4,14 @@
 \alias{chatCloud}
 \title{chatCloud}
 \usage{
-chatCloud(d, user = NULL, wordlength = 3)
+chatCloud(chatdf, user = "All", wordlength = 3)
 }
 \arguments{
-\item{d}{A dataframe containing messages created from \code{\link{parseR}}}
-
 \item{user}{The user to filter for}
 
 \item{wordlength}{Minimum word length}
+
+\item{d}{A dataframe containing messages created from \code{\link{parseR}}}
 }
 \description{
 Plot the word frequency in users/groups chat history as a wordcloud
