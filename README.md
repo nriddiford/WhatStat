@@ -41,6 +41,47 @@ install_github("nriddiford/WhatStat")
 library(WhatStat)
 ```
 
-## How to run in Shiny
+### Parse your chat log
+```
+d <- parseR(in_file = 'chatLogs/Dools_chris_chat 3.txt')
+```
 
-[Click here](https://whatstat.shinyapps.io/WhatStat/) to run the shiny web app.
+### Plot the post count by sender
+```
+senderPosts(chatdf = d)
+```
+
+### Plot the time messages are sent
+```
+senderTime(chatdf = d)
+```
+
+### Plot the messages over time (by month)
+```
+senderDate(chatdf = d)
+```
+
+### Plot the messages over a year (by month)
+```
+ senderDate(chatdf = d, filtYear = 2017)
+```
+
+### Plot the sentiments per-user for the top 5 users (by word count) using the loughran method of sentiment analysis
+```
+chatSentiments(chatdf = d, top_sender = 5, method='loughran')
+```
+
+### Make a word corpus using the tm package
+```
+c <- makeCorpus(chatdf = d)
+```
+
+### Plot the most commonly used words with a minimum word length of 3
+```
+ wordFreq(corpus = c, wordlength = 3)
+```
+
+### Plot this as a word cloud
+```
+chatCloud(chatdf = d, wordlength = 3)
+```
