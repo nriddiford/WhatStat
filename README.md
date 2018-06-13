@@ -43,7 +43,7 @@ library(WhatStat)
 
 ## Run shiny app locally
 ```
-LaunchMyApp()
+launchApp()
 ```
 
 ### Parse your chat log
