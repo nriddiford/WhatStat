@@ -1,7 +1,6 @@
 #' Launch App in the default browser
-#'
 #' @author Mathieu Delsaut, \email{mathieu.delsaut@@univ-reunion.fr}
-#'
+#' @import shiny rsconnect
 #' @examples
 #' if (interactive()) {
 #'   LaunchMyApp()
