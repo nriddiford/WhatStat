@@ -3,10 +3,10 @@
 #' @import shiny rsconnect
 #' @examples
 #' if (interactive()) {
-#'   LaunchMyApp()
+#'   launchApp()
 #' }
 #' @export
-LaunchMyApp <- function() {
+launchApp <- function() {
   appDir <- system.file("app", package = "WhatStat") # looking for inst/app
   if (appDir == "") {
     stop("Could not find example directory. Try re-installing `mypackage`.", call. = FALSE)
