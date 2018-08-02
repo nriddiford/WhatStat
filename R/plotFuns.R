@@ -201,18 +201,18 @@ senderDate <- function(file_in = NULL, user='All', filtYear = 'All', chatdf = FA
     chatdf <- filter(chatdf, sender==user)
   }
 
-  d$date <- ymd(d$date)
-  d$year <- year(d$date)
+  chatdf$date <- ymd(chatdf$date)
+  chatdf$year <- year(chatdf$date)
 
   if(yearFilt==1){
-    d <- filter(d, year == filtYear)
+    chatdf <- filter(chatdf, year == filtYear)
   }
 
-  d$month<-month(d$date, label = TRUE, abbr = TRUE)
+  chatdf$month<-month(chatdf$date, label = TRUE, abbr = TRUE)
 
   months <- c("January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December")
 
-  p <- ggplot(d, aes(as.Date(date), fill=sender))
+  p <- ggplot(chatdf, aes(as.Date(date), fill=sender))
   p <- p + geom_area(aes(group = sender, colour = sender), stat='bin',position="stack",binwidth=14, alpha = 0.5)
 
   if(userFilt==1){

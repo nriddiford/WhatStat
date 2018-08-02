@@ -16,6 +16,7 @@ library(shiny)
 library(rsconnect)
 library(lubridate)
 library(WhatStat)
+library(DT)
 # source("whatStat.R")
 
 shinyServer(function(input, output, session) {
@@ -23,7 +24,7 @@ shinyServer(function(input, output, session) {
   observe({
     inFile <- input$file
 
-    if(is.null(inFile)) return(NULL)
+    if (is.null(inFile)) return(NULL)
 
     d <- parseR(in_file=inFile$datapath)
 

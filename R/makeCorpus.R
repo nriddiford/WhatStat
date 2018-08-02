@@ -7,10 +7,9 @@
 #' @import tm SnowballC dplyr
 #' @export
 makeCorpus <- function(chatdf){
-
   excludedWords <- c("omitted", "image", 'video', 'media')
 
-  docs <- Corpus(VectorSource(d$message)) %>%
+  docs <- Corpus(VectorSource(chatdf$message)) %>%
     tm_map(content_transformer(htmlStrip)) %>%  # removing email ids
     tm_map(content_transformer(RemoveEmail)) %>%  # removing email ids
     tm_map(removePunctuation) %>%
