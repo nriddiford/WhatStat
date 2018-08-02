@@ -47,7 +47,7 @@ chatSentiments <- function(file_in=NULL, chatdf=NULL, sender = NA, top_sender = 
 
   sentimentedTokens <- filtToks %>%
     group_by(sender) %>%
-    inner_join(get_sentiments(method)) %>%
+    dplyr::inner_join(get_sentiments(method)) %>%
     dplyr::count(sentiment)
 
   senByto <- sentimentedTokens %>%
