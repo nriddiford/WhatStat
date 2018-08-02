@@ -9,4 +9,15 @@ Encoding: UTF-8
 LazyData: true
 Imports: dplyr,
     ggplot2,
-    RColorBrewer
+    RColorBrewer,
+    lubridate,
+    tm,
+    SnowballC,
+    shiny,
+    rsconnect,
+    stringi,
+    stringr,
+    tools,
+    wordcloud,
+    forcats,
+    tidytext
