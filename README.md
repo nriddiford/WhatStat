@@ -7,7 +7,7 @@ A tool to parse and visualise your WhatsApp group chats.
 
 [Click here](https://whatstat.shinyapps.io/WhatStat/) to run the shiny web app.
 
-Please [e-mail](mailto:nickriddiford@gmail.com) me if you are experiencing problems with WhatStat.
+Please [e-mail](mailto:nickriddiford@gmail.com?Subject=WhatStat) me if you are experiencing problems with WhatStat.
 
 ## How to export your WhatsApp chat log
 
